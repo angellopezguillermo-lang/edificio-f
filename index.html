@@ -82,19 +82,19 @@
                     const col = fila.split(',');
                     if(col.length >= 3) {
                         const div = document.createElement('div');
-                        // Eliminamos restricciones de altura para que el texto fluya
-                        div.className = "border-l-4 border-indigo-200 pl-4 py-2 bg-slate-50/50 rounded-r-md";
+                        // Diseño de tarjeta de aviso más espacioso y flexible
+                        div.className = "bg-slate-50 border-l-4 border-indigo-400 p-5 rounded-r-xl shadow-sm mb-4 last:mb-0";
                         div.innerHTML = `
-                            <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">${col[0]}</div>
-                            <div class="text-sm font-bold text-slate-800 mb-1">${col[1]}</div>
-                            <div class="text-xs text-slate-600 leading-normal whitespace-pre-wrap">${col[2]}</div>
+                            <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">${col[0]}</div>
+                            <div class="text-base font-bold text-slate-800 mb-2 leading-tight">${col[1]}</div>
+                            <div class="text-sm text-slate-600 leading-relaxed break-words whitespace-pre-wrap">${col[2]}</div>
                         `;
                         contenedor.appendChild(div);
                     }
                 });
             } catch (e) { console.error("Error Avisos:", e); }
         }
-
+        
         async function cargarCuotas() {
             try {
                 const res = await fetch(URL_CUOTAS);
@@ -165,4 +165,5 @@
     </script>
 </body>
 </html>
+
 
