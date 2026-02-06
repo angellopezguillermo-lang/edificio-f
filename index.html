@@ -106,28 +106,28 @@
                         tarjeta.innerHTML = `
                             <div class="p-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                                 <div>
-                                    <span class="text-xs font-bold text-slate-400 uppercase">Depto</span>
-                                    <div class="text-lg font-black text-indigo-900">${col[0]}</div>
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Departamento</span>
+                                    <div class="text-lg font-black text-indigo-900 leading-none">${col[0]}</div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-xs font-bold text-slate-400 uppercase italic">Residente</span>
-                                    <div class="text-sm font-semibold text-slate-700">${col[1] || ''}</div>
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Residente</span>
+                                    <div class="text-sm font-semibold text-slate-700 leading-none">${col[1] || ''}</div>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 divide-x divide-slate-100">
                                 <div class="p-4">
-                                    <div class="text-[10px] font-bold text-slate-400 mb-1">AGUA ($150)</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
                                     <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
-                                        ${aguaPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
+                                        ${aguaPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
                                     </div>
-                                    <div class="text-[10px] text-slate-400 mt-1">${col[3] || '---'}</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: ' + (col[3] || '') : 'Esperando pago'}</div>
                                 </div>
                                 <div class="p-4">
-                                    <div class="text-[10px] font-bold text-slate-400 mb-1">RÍO ($${col[4] || '0'})</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4] || '0'})</div>
                                     <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
-                                        ${rioPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
+                                        ${rioPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
                                     </div>
-                                    <div class="text-[10px] text-slate-400 mt-1">${col[6] || '---'}</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">${rioPagado ? 'Fecha: ' + (col[6] || '') : 'Esperando pago'}</div>
                                 </div>
                             </div>`;
                         contenedor.appendChild(tarjeta);
@@ -148,3 +148,4 @@
     </script>
 </body>
 </html>
+
