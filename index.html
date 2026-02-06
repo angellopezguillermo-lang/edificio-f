@@ -7,57 +7,56 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 text-slate-900 font-sans pb-10">
+<body class="bg-gray-200 text-gray-900 font-sans pb-10">
 
     <header class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto p-5">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">Edificio F</h1>
-                    <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-semibold tracking-widest text-left">Cargando Mes...</div>
+                    <h1 class="text-2xl font-bold tracking-tight">Edificio F</h1>
+                    <div id="mes-actual" class="text-indigo-200 text-sm font-bold uppercase tracking-wide">Cargando Mes...</div>
                 </div>
                 <div class="text-right">
-                    <span class="block text-[10px] uppercase text-indigo-300 font-bold">Última actualización:</span>
-                    <span id="fecha-actualizacion" class="text-sm font-mono font-medium">-</span>
+                    <span class="block text-xs uppercase text-indigo-300 font-bold">Actualizado:</span>
+                    <span id="fecha-actualizacion" class="text-lg font-bold">-</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto p-4 space-y-6">
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
 
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 bg-indigo-50 border-b border-indigo-100">
-                <h3 class="text-indigo-800 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                    <i class="fas fa-bullhorn"></i> Comunicados y Acuerdos
+        <section class="bg-white rounded-xl shadow-md border-t-4 border-indigo-600 overflow-hidden">
+            <div class="p-4 bg-gray-50 border-b">
+                <h3 class="text-indigo-900 font-black text-sm uppercase flex items-center gap-2">
+                    <i class="fas fa-bullhorn text-lg"></i> AVISOS Y ACUERDOS IMPORTANTES
                 </h3>
             </div>
-            <div id="contenedor-avisos" class="p-5 space-y-4">
-                <p class="text-slate-400 text-xs italic text-center">Cargando acuerdos de asamblea...</p>
+            <div id="contenedor-avisos" class="p-5 space-y-5 text-lg">
+                <p class="text-gray-500 italic">Cargando acuerdos...</p>
             </div>
         </section>
 
-        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg shadow-sm">
-            <h3 class="text-amber-800 font-bold text-[10px] uppercase mb-1 italic">Nota del Mes (Limpieza de Río):</h3>
-            <p id="nota-rio" class="text-amber-900 text-sm">Cargando información del acuerdo mensual...</p>
+        <div class="bg-yellow-100 border-l-8 border-yellow-500 p-5 rounded-r-lg shadow-md">
+            <h3 class="text-yellow-900 font-bold text-xs uppercase mb-1">Nota sobre Limpieza de Río:</h3>
+            <p id="nota-rio" class="text-gray-900 text-base font-medium leading-snug">Cargando información...</p>
         </div>
 
-        <div class="relative">
-            <input type="text" id="buscador" placeholder="Buscar por departamento (ej. 101)..." 
-                   class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
-            <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
+        <div class="relative shadow-md rounded-2xl">
+            <input type="text" id="buscador" placeholder="BUSCAR TU DEPARTAMENTO (ej. 7)..." 
+                   class="w-full p-5 pl-14 rounded-2xl border-2 border-gray-300 focus:border-indigo-600 focus:ring-0 transition-all text-lg font-bold outline-none uppercase">
+            <i class="fas fa-search absolute left-5 top-6 text-gray-400 text-xl"></i>
         </div>
 
-        <div class="space-y-3" id="contenedor-cuotas">
-            <div class="p-8 text-center text-slate-400">Cargando estatus de pagos...</div>
+        <div class="grid grid-cols-1 gap-4" id="contenedor-cuotas">
+            <div class="p-8 text-center text-gray-500 font-bold">Cargando estatus de pagos...</div>
         </div>
 
     </main>
 
     <script>
-        // CONFIGURACIÓN: REEMPLAZA ESTOS LINKS CON TUS URL DE GOOGLE SHEETS (CSV)
-        const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=0&single=true&output=csv";
-        const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
+        const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pubhtml?gid=0&single=true";
+        const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pubhtml?gid=859871361&single=true";
 
         async function inicializar() {
             await cargarAvisos();
@@ -76,17 +75,16 @@
                     const col = fila.split(',');
                     if(col.length >= 3) {
                         const div = document.createElement('div');
-                        div.className = "border-l-2 border-indigo-200 pl-4 py-1";
+                        div.className = "border-b border-gray-100 last:border-0 pb-3";
                         div.innerHTML = `
-                            <div class="text-[10px] font-bold text-indigo-400 uppercase">${col[0]}</div>
-                            <div class="text-sm font-bold text-slate-800">${col[1]}</div>
-                            <div class="text-xs text-slate-600 mt-0.5">${col[2]}</div>
+                            <div class="text-xs font-bold text-indigo-600 uppercase mb-1">${col[0]}</div>
+                            <div class="text-lg font-bold text-gray-900">${col[1]}</div>
+                            <div class="text-base text-gray-700 mt-1 leading-tight">${col[2]}</div>
                         `;
                         contenedor.appendChild(div);
                     }
                 });
-                if(contenedor.innerHTML === "") contenedor.innerHTML = "No hay avisos recientes.";
-            } catch (e) { console.error("Error en Avisos:", e); }
+            } catch (e) { console.error(e); }
         }
 
         async function cargarCuotas() {
@@ -97,7 +95,6 @@
                 const contenedor = document.getElementById('contenedor-cuotas');
                 contenedor.innerHTML = "";
 
-                // Info general desde la primera fila del Excel (Columnas H, I, J)
                 if(filas[0]) {
                     const c = filas[0].split(',');
                     document.getElementById('mes-actual').innerText = c[7] || "Gestión Mensual";
@@ -113,42 +110,41 @@
                     const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
 
                     const card = document.createElement('div');
-                    card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
+                    card.className = "bg-white rounded-xl shadow-md border-2 border-gray-200 overflow-hidden unidad-card";
                     card.setAttribute('data-depto', col[0]);
                     card.innerHTML = `
-                        <div class="p-3 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+                        <div class="p-4 flex justify-between items-center bg-gray-800 text-white">
                             <div>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Depto</span>
-                                <div class="text-lg font-black text-indigo-900 leading-none">${col[0]}</div>
+                                <span class="text-[10px] font-bold uppercase text-gray-400">Departamento</span>
+                                <div class="text-2xl font-black">${col[0]}</div>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase italic">Residente</span>
-                                <div class="text-sm font-semibold text-slate-700 leading-none">${col[1]}</div>
+                                <span class="text-[10px] font-bold uppercase text-gray-400">Residente</span>
+                                <div class="text-base font-bold text-white">${col[1]}</div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 divide-x divide-slate-100 italic">
-                            <div class="p-3">
-                                <div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
-                                <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                            <div class="p-4 flex flex-col justify-center">
+                                <div class="text-xs font-bold text-gray-500 uppercase mb-1">Agua ($150)</div>
+                                <div class="text-xl font-black ${aguaPagado ? 'text-green-600' : 'text-red-600'}">
                                     ${aguaPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
                                 </div>
-                                <div class="text-[9px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: '+col[3] : 'Esperando pago'}</div>
+                                <div class="text-sm font-bold text-gray-400 mt-1 uppercase">${aguaPagado ? 'Fecha: '+col[3] : 'Falta pago'}</div>
                             </div>
-                            <div class="p-3">
-                                <div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4]})</div>
-                                <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-xs">
+                            <div class="p-4 flex flex-col justify-center bg-gray-50">
+                                <div class="text-xs font-bold text-gray-500 uppercase mb-1">Limpieza Río ($${col[4]})</div>
+                                <div class="text-xl font-black ${rioPagado ? 'text-green-600' : 'text-red-600'}">
                                     ${rioPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
                                 </div>
-                                <div class="text-[9px] text-slate-400 mt-1">${rioPagado ? 'Fecha: '+col[6] : 'Esperando pago'}</div>
+                                <div class="text-sm font-bold text-gray-400 mt-1 uppercase">${rioPagado ? 'Fecha: '+col[6] : 'Falta pago'}</div>
                             </div>
                         </div>
                     `;
                     contenedor.appendChild(card);
                 });
-            } catch (e) { console.error("Error en Cuotas:", e); }
+            } catch (e) { console.error(e); }
         }
 
-        // Buscador funcional
         document.getElementById('buscador').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             document.querySelectorAll('.unidad-card').forEach(card => {
