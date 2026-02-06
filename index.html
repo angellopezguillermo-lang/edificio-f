@@ -3,118 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Edificio B - Transparencia</title>
+    <title>Edificio F</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .status-pill { @apply px-2 py-1 rounded-full text-xs font-bold; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans">
+<body class="bg-slate-100 text-slate-900 font-sans pb-10">
 
-    <header class="bg-indigo-700 text-white shadow-lg">
-        <div class="max-w-4xl mx-auto p-6">
+    <header class="bg-indigo-800 text-white shadow-xl sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto p-5">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold">Gestión Edificio B</h1>
-                    <p class="text-indigo-100 text-sm">Panel de Transparencia 2024-2025</p>
+                    <h1 class="text-xl font-bold tracking-tight">Edificio B</h1>
+                    <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-semibold tracking-widest">Cargando Mes...</div>
                 </div>
-                <div class="bg-indigo-600 p-3 rounded-lg text-center">
-                    <span class="block text-xs uppercase opacity-75">Fondo Actual</span>
-                    <span class="text-xl font-mono font-bold">$12,450.00</span>
+                <div class="text-right">
+                    <span class="block text-[10px] uppercase text-indigo-300 font-bold">Última actualización:</span>
+                    <span id="fecha-actualizacion" class="text-sm font-mono font-medium">-</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-6">
+    <main class="max-w-5xl mx-auto p-4 space-y-6">
 
-        <section class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg shadow-sm">
-            <div class="flex">
-                <div class="flex-shrink-0"><i class="fas fa-info-circle text-amber-400"></i></div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-bold text-amber-800 uppercase italic">Nota sobre cuota de Río:</h3>
-                    <p class="text-sm text-amber-700">
-                        La cuota varía según el crecimiento del pasto y el trayecto solicitado por los vecinos. 
-                        Este mes se acordó un total de <strong>$2,000</strong> dividido entre las unidades participantes.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
-                <h2 class="font-bold flex items-center gap-2">
-                    <i class="fas fa-file-invoice-dollar text-indigo-600"></i> Estatus de Cuotas
-                </h2>
-                <span class="text-xs text-slate-500 italic" id="fecha-actualizacion">Actualizado: Cargando...</span>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="text-xs uppercase bg-slate-50 text-slate-500">
-                            <th class="p-4 border-b">Unidad</th>
-                            <th class="p-4 border-b">Vecino</th>
-                            <th class="p-4 border-b">Agua ($150)</th>
-                            <th class="p-4 border-b">Limpieza Río</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-contenido" class="text-sm">
-                        </tbody>
-                </table>
-            </div>
-        </section>
-
-        <div class="grid grid-cols-2 gap-4">
-            <a href="#" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 transition">
-                <i class="fas fa-book text-indigo-500 mb-2 text-xl"></i>
-                <span class="block text-xs font-bold uppercase">Reglamento</span>
-            </a>
-            <a href="#" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 transition">
-                <i class="fab fa-whatsapp text-green-500 mb-2 text-xl"></i>
-                <span class="block text-xs font-bold uppercase">Reportar Pago</span>
-            </a>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 class="text-indigo-800 font-bold text-sm mb-2 flex items-center gap-2">
+                <i class="fas fa-water"></i> GESTIÓN DE LIMPIEZA (RÍO)
+            </h3>
+            <p class="text-slate-600 text-sm leading-relaxed" id="nota-rio">
+                Cargando información del acuerdo mensual...
+            </p>
         </div>
+
+        <div class="relative">
+            <input type="text" id="buscador" placeholder="Buscar por unidad (ej. 101)..." 
+                   class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all text-sm">
+            <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
+        </div>
+
+        <div class="space-y-3" id="contenedor-unidades">
+            <div class="p-8 text-center text-slate-400">Cargando datos del edificio...</div>
+        </div>
+
     </main>
 
     <script>
-        // PEGA AQUÍ TU LINK DE GOOGLE SHEETS (CSV)
+        // CONFIGURACIÓN: Pega tu link de Google Sheets (CSV) aquí
         const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?output=csv";
 
-        async function obtenerDatos() {
+        async function cargarDatos() {
             try {
-                const response = await fetch(URL_CSV);
-                const data = await response.text();
-                const rows = data.split('\n').slice(1);
-                const tableBody = document.getElementById('tabla-contenido');
-                tableBody.innerHTML = "";
+                const res = await fetch(URL_CSV);
+                const csvText = await res.text();
+                const lineas = csvText.split('\n').map(l => l.split(','));
+                
+                // Extraemos encabezados y datos
+                // Suponemos: 0:Unidad, 1:Vecino, 2:AguaEst, 3:AguaFecha, 4:RioCuota, 5:RioEst, 6:RioFecha, 7:MesNombre, 8:NotaRio, 9:Actualiz
+                const datos = lineas.slice(1); 
+                const contenedor = document.getElementById('contenedor-unidades');
+                contenedor.innerHTML = "";
 
-                rows.forEach(row => {
-                    const cols = row.split(',');
-                    if(cols.length >= 5) {
-                        const tr = document.createElement('tr');
-                        tr.className = "hover:bg-slate-50 border-b border-slate-100 last:border-0";
-                        tr.innerHTML = `
-                            <td class="p-4 font-bold text-indigo-600">${cols[0]}</td>
-                            <td class="p-4 text-slate-600">${cols[1]}</td>
-                            <td class="p-4">
-                                <span class="px-2 py-1 rounded-full text-xs font-bold ${cols[2].trim() === 'Pagado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                                    ${cols[2]}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                <div class="text-xs font-bold ${cols[4].trim() === 'Pagado' ? 'text-green-600' : 'text-red-600'}">
-                                    $${cols[3]} - ${cols[4]}
+                // Actualizar info general
+                if(datos[0]) {
+                    document.getElementById('mes-actual').innerText = datos[0][7] || "Gestión Mensual";
+                    document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas adicionales.";
+                    document.getElementById('fecha-actualizacion').innerText = datos[0][9] || "-";
+                }
+
+                datos.forEach(col => {
+                    if(col.length < 2) return;
+
+                    const tarjeta = document.createElement('div');
+                    tarjeta.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
+                    tarjeta.setAttribute('data-unidad', col[0]);
+                    
+                    const aguaPagado = col[2].trim().toLowerCase() === 'pagado';
+                    const rioPagado = col[5].trim().toLowerCase() === 'pagado';
+
+                    tarjeta.innerHTML = `
+                        <div class="p-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+                            <div>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Unidad</span>
+                                <div class="text-lg font-black text-indigo-900 leading-none">${col[0]}</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Residente</span>
+                                <div class="text-sm font-semibold text-slate-700 leading-none">${col[1]}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 divide-x divide-slate-100">
+                            <div class="p-4">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
+                                <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
+                                    ${aguaPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
                                 </div>
-                            </td>
-                        `;
-                        tableBody.appendChild(tr);
-                        document.getElementById('fecha-actualizacion').innerText = "Actualizado: " + cols[5];
-                    }
+                                <div class="text-[10px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: ' + col[3] : 'Esperando pago'}</div>
+                            </div>
+                            <div class="p-4">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4]})</div>
+                                <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
+                                    ${rioPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-1">${rioPagado ? 'Fecha: ' + col[6] : 'Esperando pago'}</div>
+                            </div>
+                        </div>
+                    `;
+                    contenedor.appendChild(tarjeta);
                 });
-            } catch (error) {
-                console.error("Error cargando datos", error);
+
+            } catch (e) {
+                console.error(e);
             }
         }
-        obtenerDatos();
+
+        // Buscador funcional
+        document.getElementById('buscador').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('.unidad-card').forEach(card => {
+                const unidad = card.getAttribute('data-unidad').toLowerCase();
+                card.style.display = unidad.includes(val) ? 'block' : 'none';
+            });
+        });
+
+        cargarDatos();
     </script>
 </body>
 </html>
