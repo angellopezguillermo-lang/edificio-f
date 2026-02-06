@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Edificio B - Transparencia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="max-w-4xl mx-auto p-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">Gestión Edificio B</h1>
+                    <p class="text-indigo-100 text-sm">Panel de Transparencia 2024-2025</p>
+                </div>
+                <div class="bg-indigo-600 p-3 rounded-lg text-center">
+                    <span class="block text-xs uppercase opacity-75">Fondo Actual</span>
+                    <span class="text-xl font-mono font-bold">$12,450.00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+
+        <section class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0"><i class="fas fa-info-circle text-amber-400"></i></div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-bold text-amber-800 uppercase italic">Nota sobre cuota de Río:</h3>
+                    <p class="text-sm text-amber-700">
+                        La cuota varía según el crecimiento del pasto y el trayecto solicitado por los vecinos. 
+                        Este mes se acordó un total de <strong>$2,000</strong> dividido entre las unidades participantes.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="font-bold flex items-center gap-2">
+                    <i class="fas fa-file-invoice-dollar text-indigo-600"></i> Estatus de Cuotas
+                </h2>
+                <span class="text-xs text-slate-500 italic" id="fecha-actualizacion">Actualizado: Cargando...</span>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-xs uppercase bg-slate-50 text-slate-500">
+                            <th class="p-4 border-b">Unidad</th>
+                            <th class="p-4 border-b">Vecino</th>
+                            <th class="p-4 border-b">Agua ($150)</th>
+                            <th class="p-4 border-b">Limpieza Río</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-contenido" class="text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-2 gap-4">
+            <a href="#" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 transition">
+                <i class="fas fa-book text-indigo-500 mb-2 text-xl"></i>
+                <span class="block text-xs font-bold uppercase">Reglamento</span>
+            </a>
+            <a href="#" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 transition">
+                <i class="fab fa-whatsapp text-green-500 mb-2 text-xl"></i>
+                <span class="block text-xs font-bold uppercase">Reportar Pago</span>
+            </a>
+        </div>
+    </main>
+
+    <script>
+        // PEGA AQUÍ TU LINK DE GOOGLE SHEETS (CSV)
+        const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?output=csv";
+
+        async function obtenerDatos() {
+            try {
+                const response = await fetch(URL_CSV);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1);
+                const tableBody = document.getElementById('tabla-contenido');
+                tableBody.innerHTML = "";
+
+                rows.forEach(row => {
+                    const cols = row.split(',');
+                    if(cols.length >= 5) {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50 border-b border-slate-100 last:border-0";
+                        tr.innerHTML = `
+                            <td class="p-4 font-bold text-indigo-600">${cols[0]}</td>
+                            <td class="p-4 text-slate-600">${cols[1]}</td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 rounded-full text-xs font-bold ${cols[2].trim() === 'Pagado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                    ${cols[2]}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <div class="text-xs font-bold ${cols[4].trim() === 'Pagado' ? 'text-green-600' : 'text-red-600'}">
+                                    $${cols[3]} - ${cols[4]}
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                        document.getElementById('fecha-actualizacion').innerText = "Actualizado: " + cols[5];
+                    }
+                });
+            } catch (error) {
+                console.error("Error cargando datos", error);
+            }
+        }
+        obtenerDatos();
+    </script>
+</body>
+</html>
