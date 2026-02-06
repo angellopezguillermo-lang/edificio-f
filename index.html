@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edificio F</title>
+    <title>Panel de Transparencia - Edificio F</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .status-pill { @apply px-2 py-1 rounded-full text-xs font-bold; }
-    </style>
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans pb-10">
 
-    <header class="bg-indigo-800 text-white shadow-xl sticky top-0 z-10">
+    <header class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto p-5">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">Edificio B</h1>
-                    <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-semibold tracking-widest">Cargando Mes...</div>
+                    <h1 class="text-xl font-bold tracking-tight">Edificio F</h1>
+                    <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-semibold tracking-widest text-left">Cargando Mes...</div>
                 </div>
                 <div class="text-right">
                     <span class="block text-[10px] uppercase text-indigo-300 font-bold">Última actualización:</span>
@@ -29,106 +26,138 @@
 
     <main class="max-w-5xl mx-auto p-4 space-y-6">
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-            <h3 class="text-indigo-800 font-bold text-sm mb-2 flex items-center gap-2">
-                <i class="fas fa-water"></i> GESTIÓN DE LIMPIEZA (RÍO)
-            </h3>
-            <p class="text-slate-600 text-sm leading-relaxed" id="nota-rio">
-                Cargando información del acuerdo mensual...
-            </p>
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 bg-indigo-50 border-b border-indigo-100">
+                <h3 class="text-indigo-800 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-bullhorn"></i> Comunicados y Acuerdos
+                </h3>
+            </div>
+            <div id="contenedor-avisos" class="p-5 space-y-4">
+                <p class="text-slate-400 text-xs italic text-center">Cargando acuerdos de asamblea...</p>
+            </div>
+        </section>
+
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg shadow-sm">
+            <h3 class="text-amber-800 font-bold text-[10px] uppercase mb-1 italic">Nota del Mes (Limpieza de Río):</h3>
+            <p id="nota-rio" class="text-amber-900 text-sm">Cargando información del acuerdo mensual...</p>
         </div>
 
         <div class="relative">
-            <input type="text" id="buscador" placeholder="Buscar por unidad (ej. 101)..." 
-                   class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all text-sm">
+            <input type="text" id="buscador" placeholder="Buscar por departamento (ej. 101)..." 
+                   class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
             <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
         </div>
 
-        <div class="space-y-3" id="contenedor-unidades">
-            <div class="p-8 text-center text-slate-400">Cargando datos del edificio...</div>
+        <div class="space-y-3" id="contenedor-cuotas">
+            <div class="p-8 text-center text-slate-400">Cargando estatus de pagos...</div>
         </div>
 
     </main>
 
     <script>
-        // CONFIGURACIÓN: Pega tu link de Google Sheets (CSV) aquí
-        const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?output=csv";
+        // CONFIGURACIÓN: REEMPLAZA ESTOS LINKS CON TUS URL DE GOOGLE SHEETS (CSV)
+        const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=0&single=true&output=csv";
+        const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
 
-        async function cargarDatos() {
+        async function inicializar() {
+            await cargarAvisos();
+            await cargarCuotas();
+        }
+
+        async function cargarAvisos() {
             try {
-                const res = await fetch(URL_CSV);
-                const csvText = await res.text();
-                const lineas = csvText.split('\n').map(l => l.split(','));
-                
-                // Extraemos encabezados y datos
-                // Suponemos: 0:Unidad, 1:Vecino, 2:AguaEst, 3:AguaFecha, 4:RioCuota, 5:RioEst, 6:RioFecha, 7:MesNombre, 8:NotaRio, 9:Actualiz
-                const datos = lineas.slice(1); 
-                const contenedor = document.getElementById('contenedor-unidades');
+                const res = await fetch(URL_AVISOS);
+                const data = await res.text();
+                const filas = data.split('\n').slice(1);
+                const contenedor = document.getElementById('contenedor-avisos');
                 contenedor.innerHTML = "";
 
-                // Actualizar info general
-                if(datos[0]) {
-                    document.getElementById('mes-actual').innerText = datos[0][7] || "Gestión Mensual";
-                    document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas adicionales.";
-                    document.getElementById('fecha-actualizacion').innerText = datos[0][9] || "-";
+                filas.forEach(fila => {
+                    const col = fila.split(',');
+                    if(col.length >= 3) {
+                        const div = document.createElement('div');
+                        div.className = "border-l-2 border-indigo-200 pl-4 py-1";
+                        div.innerHTML = `
+                            <div class="text-[10px] font-bold text-indigo-400 uppercase">${col[0]}</div>
+                            <div class="text-sm font-bold text-slate-800">${col[1]}</div>
+                            <div class="text-xs text-slate-600 mt-0.5">${col[2]}</div>
+                        `;
+                        contenedor.appendChild(div);
+                    }
+                });
+                if(contenedor.innerHTML === "") contenedor.innerHTML = "No hay avisos recientes.";
+            } catch (e) { console.error("Error en Avisos:", e); }
+        }
+
+        async function cargarCuotas() {
+            try {
+                const res = await fetch(URL_CUOTAS);
+                const data = await res.text();
+                const filas = data.split('\n').slice(1);
+                const contenedor = document.getElementById('contenedor-cuotas');
+                contenedor.innerHTML = "";
+
+                // Info general desde la primera fila del Excel (Columnas H, I, J)
+                if(filas[0]) {
+                    const c = filas[0].split(',');
+                    document.getElementById('mes-actual').innerText = c[7] || "Gestión Mensual";
+                    document.getElementById('nota-rio').innerText = c[8] || "Sin notas adicionales.";
+                    document.getElementById('fecha-actualizacion').innerText = c[9] || "-";
                 }
 
-                datos.forEach(col => {
+                filas.forEach(fila => {
+                    const col = fila.split(',');
                     if(col.length < 2) return;
 
-                    const tarjeta = document.createElement('div');
-                    tarjeta.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
-                    tarjeta.setAttribute('data-unidad', col[0]);
-                    
-                    const aguaPagado = col[2].trim().toLowerCase() === 'pagado';
-                    const rioPagado = col[5].trim().toLowerCase() === 'pagado';
+                    const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
+                    const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
 
-                    tarjeta.innerHTML = `
-                        <div class="p-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
+                    card.setAttribute('data-depto', col[0]);
+                    card.innerHTML = `
+                        <div class="p-3 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                             <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Unidad</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Depto</span>
                                 <div class="text-lg font-black text-indigo-900 leading-none">${col[0]}</div>
                             </div>
                             <div class="text-right">
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Residente</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase italic">Residente</span>
                                 <div class="text-sm font-semibold text-slate-700 leading-none">${col[1]}</div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 divide-x divide-slate-100">
-                            <div class="p-4">
-                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
-                                <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
-                                    ${aguaPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
+                        <div class="grid grid-cols-2 divide-x divide-slate-100 italic">
+                            <div class="p-3">
+                                <div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
+                                <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-xs">
+                                    ${aguaPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: ' + col[3] : 'Esperando pago'}</div>
+                                <div class="text-[9px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: '+col[3] : 'Esperando pago'}</div>
                             </div>
-                            <div class="p-4">
-                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4]})</div>
-                                <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
-                                    ${rioPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
+                            <div class="p-3">
+                                <div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4]})</div>
+                                <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-xs">
+                                    ${rioPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-1">${rioPagado ? 'Fecha: ' + col[6] : 'Esperando pago'}</div>
+                                <div class="text-[9px] text-slate-400 mt-1">${rioPagado ? 'Fecha: '+col[6] : 'Esperando pago'}</div>
                             </div>
                         </div>
                     `;
-                    contenedor.appendChild(tarjeta);
+                    contenedor.appendChild(card);
                 });
-
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error("Error en Cuotas:", e); }
         }
 
         // Buscador funcional
         document.getElementById('buscador').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             document.querySelectorAll('.unidad-card').forEach(card => {
-                const unidad = card.getAttribute('data-unidad').toLowerCase();
-                card.style.display = unidad.includes(val) ? 'block' : 'none';
+                const depto = card.getAttribute('data-depto').toLowerCase();
+                card.style.display = depto.includes(val) ? 'block' : 'none';
             });
         });
 
-        cargarDatos();
+        inicializar();
     </script>
 </body>
 </html>
