@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Transparencia - Edificio F</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans pb-10">
@@ -14,7 +15,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">Edificio F</h1>
-                    <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-semibold tracking-widest">Cargando Mes...</div>
+                    <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-semibold tracking-widest">Cargando...</div>
                 </div>
                 <div class="text-right">
                     <span class="block text-[10px] uppercase text-indigo-300 font-bold">Última actualización:</span>
@@ -29,140 +30,110 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-4 bg-slate-50 border-b border-slate-100">
                 <h3 class="text-indigo-800 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                    <i class="fas fa-bullhorn text-sm"></i> Comunicados y Acuerdos
+                    <i class="fas fa-bullhorn"></i> Comunicados y Acuerdos
                 </h3>
             </div>
-            <div id="contenedor-avisos" class="p-5 space-y-4">
-                <p class="text-slate-400 text-xs italic">Cargando acuerdos...</p>
-            </div>
+            <div id="contenedor-avisos" class="p-5 space-y-4 text-sm text-slate-600">
+                </div>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 class="text-indigo-800 font-bold text-sm mb-2 flex items-center gap-2">
                 <i class="fas fa-water"></i> GESTIÓN DE LIMPIEZA (RÍO)
             </h3>
-            <p class="text-slate-600 text-sm leading-relaxed" id="nota-rio">
-                Cargando información del acuerdo mensual...
-            </p>
+            <p class="text-slate-600 text-sm leading-relaxed" id="nota-rio">-</p>
         </div>
 
         <div class="relative">
-            <input type="text" id="buscador" placeholder="Buscar por departamento (ej. 7)..." 
+            <input type="text" id="buscador" placeholder="Buscar por departamento..." 
                    class="w-full p-4 pl-12 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
             <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
         </div>
 
         <div class="space-y-3" id="contenedor-unidades">
-            <div class="p-8 text-center text-slate-400">Cargando datos del edificio...</div>
-        </div>
+            </div>
 
     </main>
 
     <script>
-        // CONFIGURACIÓN: Pega aquí tus enlaces CSV
         const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=0&single=true&output=csv";
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
 
-        async function inicializar() {
-            await cargarAvisos();
-            await cargarCuotas();
-        }
-
-        async function cargarAvisos() {
-            try {
-                const res = await fetch(URL_AVISOS);
-                const data = await res.text();
-                if (data.includes("<!DOCTYPE")) return; 
-                
-                // Dividimos por filas, pero limpiamos espacios vacíos
-                const filas = data.split(/\r?\n/).filter(f => f.trim() !== "").slice(1);
-                const contenedor = document.getElementById('contenedor-avisos');
-                contenedor.innerHTML = "";
-
-                filas.forEach(fila => {
-                    // Esta expresión regular es la "llave maestra": 
-                    // Separa por comas PERO ignora las comas que estén dentro de comillas.
-                    const col = fila.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                    
-                    if(col && col.length >= 3) {
-                        // Limpiamos las comillas extras que pone Google Sheets
-                        const fecha = col[0].replace(/^"|"$/g, "").trim();
-                        const titulo = col[1].replace(/^"|"$/g, "").trim();
-                        const desc = col[2].replace(/^"|"$/g, "").trim();
-
+        async function cargarDatos() {
+            // Cargar Avisos con PapaParse
+            Papa.parse(URL_AVISOS, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const contenedor = document.getElementById('contenedor-avisos');
+                    contenedor.innerHTML = "";
+                    results.data.forEach(row => {
                         const div = document.createElement('div');
-                        div.className = "border-l-4 border-indigo-400 pl-4 py-2 bg-slate-50/50 rounded-r-md mb-4 last:mb-0";
+                        div.className = "border-l-4 border-indigo-200 pl-4 py-2 mb-4 last:mb-0 bg-slate-50/50 rounded-r-lg";
                         div.innerHTML = `
-                            <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">${fecha}</div>
-                            <div class="text-sm font-bold text-slate-800 mb-1 leading-tight">${titulo}</div>
-                            <div class="text-xs text-slate-600 leading-normal whitespace-pre-wrap text-justify">${desc}</div>
+                            <div class="text-[10px] font-bold text-indigo-400 uppercase">${row.Fecha || ''}</div>
+                            <div class="text-base font-bold text-slate-800 mb-1">${row.Título || ''}</div>
+                            <div class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">${row.Descripción || ''}</div>
                         `;
                         contenedor.appendChild(div);
+                    });
+                }
+            });
+
+            // Cargar Cuotas con PapaParse
+            Papa.parse(URL_CUOTAS, {
+                download: true,
+                header: false,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const datos = results.data.slice(1);
+                    const contenedor = document.getElementById('contenedor-unidades');
+                    contenedor.innerHTML = "";
+
+                    if(datos[0]) {
+                        document.getElementById('mes-actual').innerText = datos[0][7] || "FEBRERO";
+                        document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas.";
+                        document.getElementById('fecha-actualizacion').innerText = datos[0][9] || "-";
                     }
-                });
-                
-                if(contenedor.innerHTML === "") {
-                    contenedor.innerHTML = "<p class='text-slate-400 text-xs italic'>No hay avisos registrados.</p>";
-                }
-            } catch (e) { console.error("Error Avisos:", e); }
-        }
-        
-        async function cargarCuotas() {
-            try {
-                const res = await fetch(URL_CUOTAS);
-                const csvText = await res.text();
-                const lineas = csvText.split('\n').map(l => l.split(','));
-                const datos = lineas.slice(1); 
-                const contenedor = document.getElementById('contenedor-unidades');
-                contenedor.innerHTML = "";
 
-                if(datos[0]) {
-                    document.getElementById('mes-actual').innerText = datos[0][7] || "Gestión Mensual";
-                    document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas adicionales.";
-                    document.getElementById('fecha-actualizacion').innerText = datos[0][9] || "-";
-                }
-
-                datos.forEach(col => {
-                    if(col.length < 2) return;
-
-                    const tarjeta = document.createElement('div');
-                    tarjeta.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
-                    tarjeta.setAttribute('data-depto', col[0]);
-                    
-                    const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
-                    const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
-
-                    tarjeta.innerHTML = `
-                        <div class="p-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
-                            <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Departamento</span>
-                                <div class="text-lg font-black text-indigo-900 leading-none">${col[0]}</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Residente</span>
-                                <div class="text-sm font-semibold text-slate-700 leading-none">${col[1]}</div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 divide-x divide-slate-100">
-                            <div class="p-4">
-                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
-                                <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
-                                    ${aguaPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
+                    datos.forEach(col => {
+                        const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
+                        const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
+                        const tarjeta = document.createElement('div');
+                        tarjeta.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
+                        tarjeta.setAttribute('data-depto', col[0]);
+                        tarjeta.innerHTML = `
+                            <div class="p-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+                                <div>
+                                    <span class="text-xs font-bold text-slate-400 uppercase">Depto</span>
+                                    <div class="text-lg font-black text-indigo-900">${col[0]}</div>
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: ' + col[3] : 'Esperando pago'}</div>
-                            </div>
-                            <div class="p-4">
-                                <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4]})</div>
-                                <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
-                                    ${rioPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
+                                <div class="text-right">
+                                    <span class="text-xs font-bold text-slate-400 uppercase italic">Residente</span>
+                                    <div class="text-sm font-semibold text-slate-700">${col[1] || ''}</div>
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-1">${rioPagado ? 'Fecha: ' + col[6] : 'Esperando pago'}</div>
                             </div>
-                        </div>
-                    `;
-                    contenedor.appendChild(tarjeta);
-                });
-            } catch (e) { console.error("Error Cuotas:", e); }
+                            <div class="grid grid-cols-2 divide-x divide-slate-100">
+                                <div class="p-4">
+                                    <div class="text-[10px] font-bold text-slate-400 mb-1">AGUA ($150)</div>
+                                    <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
+                                        ${aguaPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 mt-1">${col[3] || '---'}</div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="text-[10px] font-bold text-slate-400 mb-1">RÍO ($${col[4] || '0'})</div>
+                                    <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
+                                        ${rioPagado ? '✓ PAGADO' : '✕ PENDIENTE'}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 mt-1">${col[6] || '---'}</div>
+                                </div>
+                            </div>`;
+                        contenedor.appendChild(tarjeta);
+                    });
+                }
+            });
         }
 
         document.getElementById('buscador').addEventListener('input', (e) => {
@@ -173,11 +144,7 @@
             });
         });
 
-        inicializar();
+        cargarDatos();
     </script>
 </body>
 </html>
-
-
-
-
