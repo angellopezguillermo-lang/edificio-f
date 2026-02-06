@@ -74,20 +74,26 @@
                 const data = await res.text();
                 if (data.includes("<!DOCTYPE")) return; 
                 
-                const filas = data.split('\n').slice(1);
+                // Esta fórmula mágica ignora las comas que están dentro de comillas
+                const filas = data.split(/\r?\n/).slice(1);
                 const contenedor = document.getElementById('contenedor-avisos');
                 contenedor.innerHTML = "";
 
                 filas.forEach(fila => {
-                    const col = fila.split(',');
-                    if(col.length >= 3) {
+                    // Expresión regular para separar por comas respetando textos largos
+                    const col = fila.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    
+                    if(col && col.length >= 3) {
+                        const fecha = col[0].replace(/"/g, "");
+                        const titulo = col[1].replace(/"/g, "");
+                        const desc = col[2].replace(/"/g, "");
+
                         const div = document.createElement('div');
-                        // Diseño de tarjeta de aviso más espacioso y flexible
                         div.className = "bg-slate-50 border-l-4 border-indigo-400 p-5 rounded-r-xl shadow-sm mb-4 last:mb-0";
                         div.innerHTML = `
-                            <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">${col[0]}</div>
-                            <div class="text-base font-bold text-slate-800 mb-2 leading-tight">${col[1]}</div>
-                            <div class="text-sm text-slate-600 leading-relaxed break-words whitespace-pre-wrap">${col[2]}</div>
+                            <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">${fecha}</div>
+                            <div class="text-base font-bold text-slate-800 mb-2 leading-tight">${titulo}</div>
+                            <div class="text-sm text-slate-600 leading-relaxed break-words whitespace-pre-wrap text-justify">${desc}</div>
                         `;
                         contenedor.appendChild(div);
                     }
@@ -165,5 +171,6 @@
     </script>
 </body>
 </html>
+
 
 
