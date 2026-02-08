@@ -33,8 +33,7 @@
                     <i class="fas fa-bullhorn"></i> Comunicados y Acuerdos
                 </h3>
             </div>
-            <div id="contenedor-avisos" class="p-5 space-y-4 text-sm text-slate-600">
-                </div>
+            <div id="contenedor-avisos" class="p-5 space-y-4 text-sm text-slate-600"></div>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
@@ -50,8 +49,7 @@
             <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
         </div>
 
-        <div class="space-y-3" id="contenedor-unidades">
-            </div>
+        <div class="space-y-3" id="contenedor-unidades"></div>
 
     </main>
 
@@ -60,7 +58,6 @@
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
 
         async function cargarDatos() {
-            // Cargar Avisos con PapaParse
             Papa.parse(URL_AVISOS, {
                 download: true,
                 header: true,
@@ -81,7 +78,6 @@
                 }
             });
 
-            // Cargar Cuotas con PapaParse
             Papa.parse(URL_CUOTAS, {
                 download: true,
                 header: false,
@@ -100,9 +96,28 @@
                     datos.forEach(col => {
                         const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
                         const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
+                        
+                        // Lógica de Multas (Columna N es índice 13, Columna O es índice 14)
+                        const montoMulta = col[13];
+                        const motivoMulta = col[14];
+                        const tieneMulta = montoMulta && parseFloat(montoMulta) > 0;
+
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card";
                         tarjeta.setAttribute('data-depto', col[0]);
+                        
+                        let htmlMulta = tieneMulta ? `
+                            <div class="px-4 pb-4">
+                                <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-[9px] font-bold text-orange-500 uppercase">Cargo Adicional</p>
+                                        <p class="text-xs text-slate-600 italic leading-tight">${motivoMulta || 'Pendiente'}</p>
+                                    </div>
+                                    <div class="text-orange-600 font-bold text-lg">+$${montoMulta}</div>
+                                </div>
+                            </div>
+                        ` : '';
+
                         tarjeta.innerHTML = `
                             <div class="p-4 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                                 <div>
@@ -129,7 +144,9 @@
                                     </div>
                                     <div class="text-[10px] text-slate-400 mt-1">${rioPagado ? 'Fecha: ' + (col[6] || '') : 'Esperando pago'}</div>
                                 </div>
-                            </div>`;
+                            </div>
+                            ${htmlMulta}
+                        `;
                         contenedor.appendChild(tarjeta);
                     });
                 }
@@ -147,21 +164,11 @@
         cargarDatos();
     </script>
 
-    <footer class="mt-10 pb-6 text-center">
-        <div class="inline-block bg-white p-2 rounded-lg shadow-sm border border-slate-200">
-            <img src="https://komarev.com/ghpvc/?username=edificiof2026&color=4F46E5&style=flat-square&label=VISITAS" 
-                 alt="Visitas" 
-                 class="h-5">
-        </div>
-        <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-widest font-bold">
-            Panel de Transparencia - Edificio F
+    <footer class="mt-16 pb-10 text-center">
+        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+            Gestión de Transparencia Activa • Edificio F
         </p>
     </footer>
     
 </body>
 </html>
-
-
-
-
-
