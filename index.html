@@ -58,6 +58,7 @@
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
 
         async function cargarDatos() {
+            // Cargar Avisos
             Papa.parse(URL_AVISOS, {
                 download: true,
                 header: true,
@@ -78,6 +79,7 @@
                 }
             });
 
+            // Cargar Cuotas y Pagos
             Papa.parse(URL_CUOTAS, {
                 download: true,
                 header: false,
@@ -94,47 +96,58 @@
                     }
 
                     datos.forEach(col => {
+                        // --- CONFIGURACIÓN DE CUOTAS ---
+                        const cuotaAguaMonto = 150; // Cambiar a 170 el próximo mes
+                        const cuotaRioMonto = parseFloat(col[4]) || 0;
+                        
                         const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
                         const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
                         
-                        // Lógica de Multas (Columnas N y O -> índices 13 y 14)
-                        const montoMulta = col[13];
-                        const motivoMulta = col[14];
-                        const tieneMulta = montoMulta && parseFloat(montoMulta) > 0;
+                        // --- PLAN B (K=10, L=11, M=12) ---
+                        const s1 = parseFloat(col[10]) || 0;
+                        const s2 = parseFloat(col[11]) || 0;
+                        const s3 = parseFloat(col[12]) || 0;
+                        
+                        // --- MULTAS (N=13, O=14) ---
+                        const multaMonto = parseFloat(col[13]) || 0;
+                        const multaMotivo = col[14] || "";
 
-                        // NUEVA Lógica de Plan B (Columnas K, L, M -> índices 10, 11, 12)
-                        const montoPlanB = col[10];
-                        const estatusPlanB = col[11];
-                        const notaPlanB = col[12];
-                        const tienePlanB = montoPlanB && parseFloat(montoPlanB) > 0;
+                        // --- CÁLCULO TOTAL ---
+                        let totalAcumulado = 0;
+                        if (aguaPagado) totalAcumulado += cuotaAguaMonto;
+                        if (rioPagado) totalAcumulado += cuotaRioMonto;
+                        totalAcumulado += (s1 + s2 + s3 + multaMonto);
 
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden unidad-card mb-4";
                         tarjeta.setAttribute('data-depto', col[0]);
                         
-                        // Bloque Visual Multa
-                        let htmlMulta = tieneMulta ? `
-                            <div class="px-4 pb-3">
-                                <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 flex justify-between items-center">
-                                    <div>
-                                        <p class="text-[9px] font-bold text-orange-500 uppercase">Multas / Recargos</p>
-                                        <p class="text-xs text-slate-600 italic leading-tight">${motivoMulta || 'Pendiente'}</p>
-                                    </div>
-                                    <div class="text-orange-600 font-bold text-lg">+$${montoMulta}</div>
+                        // Desglose de Plan B
+                        let desglosePlanB = "";
+                        if(s1 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 1</span><span class="font-bold">$${s1}</span></div>`;
+                        if(s2 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 2</span><span class="font-bold">$${s2}</span></div>`;
+                        if(s3 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 3</span><span class="font-bold">$${s3}</span></div>`;
+
+                        let htmlPlanB = (s1 + s2 + s3 > 0) ? `
+                            <div class="px-4 pb-2">
+                                <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-blue-700">
+                                    <p class="text-[9px] font-bold uppercase mb-1 flex items-center gap-1">
+                                        <i class="fas fa-faucet"></i> Plan B (Pipas)
+                                    </p>
+                                    <div class="text-[11px] space-y-1">${desglosePlanB}</div>
                                 </div>
                             </div>
                         ` : '';
 
-                        // Bloque Visual Plan B
-                        let htmlPlanB = tienePlanB ? `
+                        // Bloque Multas
+                        let htmlMulta = multaMonto > 0 ? `
                             <div class="px-4 pb-3">
-                                <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 flex justify-between items-center">
+                                <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 flex justify-between items-center text-orange-700">
                                     <div>
-                                        <p class="text-[9px] font-bold text-blue-500 uppercase italic">Plan B (Pipas)</p>
-                                        <p class="text-xs text-slate-600 font-semibold leading-tight">${estatusPlanB || 'Cooperación recibida'}</p>
-                                        <p class="text-[9px] text-slate-400 italic">${notaPlanB || ''}</p>
+                                        <p class="text-[9px] font-bold uppercase italic">Adeudo Extra</p>
+                                        <p class="text-xs italic leading-tight">${multaMotivo}</p>
                                     </div>
-                                    <div class="text-blue-600 font-bold text-lg">$${montoPlanB}</div>
+                                    <div class="font-bold text-lg">+$${multaMonto}</div>
                                 </div>
                             </div>
                         ` : '';
@@ -146,28 +159,29 @@
                                     <div class="text-lg font-black text-indigo-900 leading-none">${col[0]}</div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">Residente</span>
-                                    <div class="text-sm font-semibold text-slate-700 leading-none">${col[1] || ''}</div>
+                                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Aportación Total</span>
+                                    <div class="text-2xl font-black text-indigo-600 leading-none">$${totalAcumulado}</div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 divide-x divide-slate-100">
+                            <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-50 mb-3">
                                 <div class="p-4">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Agua ($150)</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Agua ($${cuotaAguaMonto})</div>
                                     <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
                                         ${aguaPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
                                     </div>
-                                    <div class="text-[10px] text-slate-400 mt-1">${aguaPagado ? 'Fecha: ' + (col[3] || '') : 'Esperando pago'}</div>
                                 </div>
                                 <div class="p-4">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${col[4] || '0'})</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Limpieza Río ($${cuotaRioMonto})</div>
                                     <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-bold text-sm">
                                         ${rioPagado ? '<i class="fas fa-check-circle mr-1"></i>PAGADO' : '<i class="fas fa-clock mr-1"></i>PENDIENTE'}
                                     </div>
-                                    <div class="text-[10px] text-slate-400 mt-1">${rioPagado ? 'Fecha: ' + (col[6] || '') : 'Esperando pago'}</div>
                                 </div>
                             </div>
                             ${htmlPlanB}
                             ${htmlMulta}
+                            <div class="px-4 py-2 bg-slate-50/50 text-[10px] text-slate-400 italic">
+                                Residente: ${col[1] || '---'}
+                            </div>
                         `;
                         contenedor.appendChild(tarjeta);
                     });
@@ -175,6 +189,7 @@
             });
         }
 
+        // Buscador
         document.getElementById('buscador').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             document.querySelectorAll('.unidad-card').forEach(card => {
