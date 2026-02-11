@@ -44,13 +44,7 @@
             <p class="text-slate-700 text-base leading-relaxed border-l-4 border-blue-100 pl-4 italic" id="nota-rio">-</p>
         </div>
 
-        <div class="relative">
-            <input type="text" id="buscador" placeholder="Buscar por departamento..." 
-                   class="w-full p-5 pl-14 rounded-2xl border-none shadow-md focus:ring-4 focus:ring-indigo-500/20 transition-all text-lg outline-none">
-            <i class="fas fa-search absolute left-5 top-5 text-slate-400 text-xl"></i>
-        </div>
-
-        <div class="space-y-6" id="contenedor-unidades"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="contenedor-unidades"></div>
 
     </main>
 
@@ -59,6 +53,7 @@
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
 
         async function cargarDatos() {
+            // Cargar Avisos
             Papa.parse(URL_AVISOS, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
@@ -77,6 +72,7 @@
                 }
             });
 
+            // Cargar Cuotas
             Papa.parse(URL_CUOTAS, {
                 download: true, header: false, skipEmptyLines: true,
                 complete: function(results) {
@@ -86,7 +82,7 @@
                     let sumaGeneralEdificio = 0;
 
                     if(datos[0]) {
-                        document.getElementById('mes-actual').innerText = datos[0][7] || "FEBRERO";
+                        document.getElementById('mes-actual').innerText = datos[0][7] || "MES ACTUAL";
                         document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas.";
                         document.getElementById('fecha-actualizacion').innerText = "ÚLTIMA ACTUALIZACIÓN: " + (datos[0][9] || "-");
                     }
@@ -113,8 +109,7 @@
                         sumaGeneralEdificio += totalVecino;
 
                         const tarjeta = document.createElement('div');
-                        tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden unidad-card";
-                        tarjeta.setAttribute('data-depto', col[0]);
+                        tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
                         
                         let desglosePlanB = "";
                         if(s1 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
@@ -178,7 +173,6 @@
                             ${htmlMulta}
                             <div class="px-6 py-3 bg-slate-50/80 text-xs text-slate-500 flex justify-between font-medium">
                                 <span><i class="fas fa-user-circle mr-1"></i> Residente: ${col[1] || '---'}</span>
-                                <span class="font-black text-indigo-300">UNIDAD F</span>
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
@@ -187,14 +181,6 @@
                 }
             });
         }
-
-        document.getElementById('buscador').addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            document.querySelectorAll('.unidad-card').forEach(card => {
-                const depto = card.getAttribute('data-depto').toLowerCase();
-                card.style.display = depto.includes(val) ? 'block' : 'none';
-            });
-        });
 
         cargarDatos();
     </script>
