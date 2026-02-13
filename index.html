@@ -93,7 +93,7 @@
                         div.innerHTML = `
                             <div class="text-xs font-bold text-indigo-400 uppercase mb-1">${row.Fecha || ''}</div>
                             <div class="text-lg font-bold text-slate-800 mb-1">${row.Título || ''}</div>
-                            <div class="text-base text-slate-600 leading-relaxed">${row.Descripción || ''}</div>
+                            <div class="text-base text-slate-600 leading-relaxed whitespace-pre-line">${row.Descripción || ''}</div>
                         `;
                         contenedor.appendChild(div);
                     });
@@ -214,3 +214,4 @@
     </script>
 </body>
 </html>
+
