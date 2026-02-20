@@ -35,25 +35,48 @@
 
     <main class="max-w-5xl mx-auto p-4 space-y-8">
 
-        <section class="space-y-4">
+        <section class="space-y-6">
             <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3 px-2">
-                <i class="fas fa-gavel text-indigo-500 text-lg"></i> Resumen del Reglamento Vigente
+                <i class="fas fa-gavel text-indigo-500 text-lg"></i> Reglas y Acuerdos 2025-2026
             </h3>
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-blue-500 border border-slate-200">
                     <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-1">Pagos y Agua</span>
-                    <p class="text-sm font-bold text-slate-700">Cuota: $150 mensual.</p>
-                    <p class="text-xs text-slate-500 mt-1">Límite de pago: día 10 de cada mes. A partir del día 11 se realiza el corte de suministro.</p>
+                    <p class="text-sm font-bold text-slate-700">Cuota: $150 mensual</p>
+                    <p class="text-xs text-slate-500 mt-1">Límite: día 10. El día 11 se corta el agua. Reconexión: $150.</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-orange-500 border border-slate-200">
-                    <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest block mb-1">Multa General: $250</span>
-                    <p class="text-sm font-bold text-slate-700">Ruido, basura y áreas comunes.</p>
-                    <p class="text-xs text-slate-500 mt-1">Aplica por ruido después de las 10:00 PM, dejar basura en pasillos o bloquear escaleras.</p>
+                    <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest block mb-1">Multa Convivencia</span>
+                    <p class="text-sm font-bold text-slate-700">$250 por incidente</p>
+                    <p class="text-xs text-slate-500 mt-1">Ruido (>10PM), basura en áreas comunes o dejar puertas abiertas.</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-purple-500 border border-slate-200">
-                    <span class="text-[10px] font-black text-purple-600 uppercase tracking-widest block mb-1">Nuevos Inquilinos</span>
-                    <p class="text-sm font-bold text-slate-700">Garantía: $3,000.</p>
-                    <p class="text-xs text-slate-500 mt-1">Requisito obligatorio: copia de INE y firma de contrato de conformidad con el edificio.</p>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-red-500 border border-slate-200">
+                    <span class="text-[10px] font-black text-red-600 uppercase tracking-widest block mb-1">Asambleas</span>
+                    <p class="text-sm font-bold text-slate-700">$500 por inasistencia</p>
+                    <p class="text-xs text-slate-500 mt-1">Aplica en juntas de cambio de comité anual. Incluye corte de agua.</p>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900 text-indigo-100 p-6 rounded-2xl shadow-lg">
+                <h4 class="text-xs font-black uppercase tracking-[0.2em] mb-4 border-b border-indigo-700 pb-2">Otros Acuerdos Relevantes</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div class="flex gap-3">
+                        <i class="fas fa-user-shield text-indigo-400 mt-1"></i>
+                        <p><span class="font-bold text-white italic">Inquilinos:</span> Deben dejar depósito de <span class="text-amber-400 font-bold">$3,000</span>, entregar copia de INE y firmar contrato de conformidad.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <i class="fas fa-dog text-indigo-400 mt-1"></i>
+                        <p><span class="font-bold text-white italic">Mascotas:</span> Responsabilidad total del dueño. Daños o desechos en áreas comunes generan multa de <span class="text-amber-400 font-bold">$250</span>.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <i class="fas fa-hands-helping text-indigo-400 mt-1"></i>
+                        <p><span class="font-bold text-white italic">Apoyo Comunitario:</span> Deudores pueden cubrir hasta el <span class="text-amber-400 font-bold">50%</span> de multas mediante trabajos de limpieza o mantenimiento.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <i class="fas fa-exclamation-triangle text-indigo-400 mt-1"></i>
+                        <p><span class="font-bold text-white italic">Límite de Adeudo:</span> Al acumular <span class="text-amber-400 font-bold">$750</span> en multas o 3 sanciones, se suspenderá el servicio de agua.</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -78,9 +101,8 @@
                         </div>
                         <i class="fas fa-chevron-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
                     </a>
-                    
-                    <div class="flex items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl opacity-50">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Próximos documentos aquí</span>
+                    <div class="flex items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl opacity-50 text-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Próximos documentos aquí</span>
                     </div>
                 </div>
             </div>
@@ -112,7 +134,6 @@
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
 
         async function cargarDatos() {
-            // Cargar Avisos
             Papa.parse(URL_AVISOS, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
@@ -131,7 +152,6 @@
                 }
             });
 
-            // Cargar Cuotas
             Papa.parse(URL_CUOTAS, {
                 download: true, header: false, skipEmptyLines: true,
                 complete: function(results) {
@@ -164,7 +184,6 @@
                         if (rioPagado) totalVecino += cuotaRioMonto;
                         if (multaPagada) totalVecino += multaMonto;
                         totalVecino += (s1 + s2 + s3);
-
                         sumaGeneralEdificio += totalVecino;
 
                         const tarjeta = document.createElement('div');
@@ -240,7 +259,6 @@
                 }
             });
         }
-
         cargarDatos();
     </script>
 </body>
