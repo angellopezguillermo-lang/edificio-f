@@ -58,6 +58,36 @@
                 </div>
             </div>
 
+            <div class="bg-white border-2 border-indigo-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest leading-none">Datos para Depósito / Transferencia</h4>
+                            <p class="text-lg font-black text-slate-800 mt-1">Virna Díaz Velásquez</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        <div class="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 flex-1">
+                            <span class="block text-[10px] uppercase text-slate-400 font-bold tracking-tighter">Banco</span>
+                            <span class="text-sm font-bold text-slate-700 uppercase">Santander</span>
+                        </div>
+                        <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200 flex-1 flex justify-between items-center gap-4">
+                            <div>
+                                <span class="block text-[10px] uppercase text-indigo-400 font-bold tracking-tighter">Número de Tarjeta</span>
+                                <span id="num-tarjeta" class="text-sm font-mono font-bold text-indigo-800 tracking-wider">5579 1001 3565 7797</span>
+                            </div>
+                            <button onclick="copiarTarjeta()" id="btn-copiar" class="bg-white text-indigo-600 p-2 rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all active:scale-90" title="Copiar número">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-4 text-[11px] text-slate-400 text-center italic">Por favor, envía tu comprobante vía WhatsApp una vez realizado el pago.</p>
+            </div>
+
             <div class="bg-indigo-900 text-indigo-100 p-6 rounded-2xl shadow-lg">
                 <h4 class="text-xs font-black uppercase tracking-[0.2em] mb-4 border-b border-indigo-700 pb-2">Recordatorios de Seguridad y Convivencia</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
@@ -132,6 +162,24 @@
     <script>
         const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=0&single=true&output=csv";
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
+
+        // Función para copiar el número de tarjeta
+        function copiarTarjeta() {
+            const numero = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
+            const btn = document.getElementById('btn-copiar');
+            
+            navigator.clipboard.writeText(numero).then(() => {
+                // Feedback visual
+                const iconoOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                
+                setTimeout(() => {
+                    btn.innerHTML = iconoOriginal;
+                    btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                }, 2000);
+            });
+        }
 
         async function cargarDatos() {
             Papa.parse(URL_AVISOS, {
