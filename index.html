@@ -215,7 +215,7 @@
                     }
 
                     datos.forEach(col => {
-                        const cuotaAguaMonto = 150; 
+                        const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
                         const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
@@ -311,5 +311,6 @@
     </script>
 </body>
 </html>
+
 
 
