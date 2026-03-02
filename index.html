@@ -33,44 +33,8 @@
         </div>
     </header>
 
-<section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="p-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
-        <h3 class="text-indigo-800 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-            <i class="fas fa-calendar-alt"></i> Estado del Suministro - Marzo 2026
-        </h3>
-        <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">HOY: 2 DE MARZO</span>
-    </div>
-    <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div id="sem-1" class="relative p-3 rounded-2xl border-2 transition-all">
-            <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana 1</span>
-            <p class="text-sm font-bold">Mar 02 - Mar 08</p>
-            <div class="mt-2 flex items-center gap-2 text-[11px] font-black">
-                <i class="fas fa-truck-moving text-blue-500"></i> SERVICIO: PIPA
-            </div>
-        </div>
-        <div id="sem-2" class="relative p-3 rounded-2xl border-2 transition-all">
-            <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana 2</span>
-            <p class="text-sm font-bold">Mar 09 - Mar 15</p>
-            <div class="mt-2 flex items-center gap-2 text-[11px] font-black">
-                <i class="fas fa-truck-moving text-blue-500"></i> SERVICIO: PIPA
-            </div>
-        </div>
-        <div id="sem-3" class="relative p-3 rounded-2xl border-2 transition-all">
-            <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana 3</span>
-            <p class="text-sm font-bold">Mar 16 - Mar 22</p>
-            <div class="mt-2 flex items-center gap-2 text-[11px] font-black">
-                <i class="fas fa-truck-moving text-blue-500"></i> SERVICIO: PIPA
-            </div>
-        </div>
-        <div id="sem-4" class="relative p-3 rounded-2xl border-2 transition-all">
-            <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana 4</span>
-            <p class="text-sm font-bold">Mar 23 - Mar 31</p>
-            <div class="mt-2 flex items-center gap-2 text-[11px] font-black">
-                <i class="fas fa-house-user text-indigo-500"></i> CUOTA ORD.
-            </div>
-        </div>
-    </div>
-</section>
+<section id="seccion-calendario" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+    </section>
     
     <main class="max-w-5xl mx-auto p-4 space-y-8">
 
@@ -380,32 +344,69 @@
         }
         cargarDatos();
 
-        function actualizarCalendario() {
-            const hoy = new Date(); // Hoy es 2 de marzo de 2026
-            const dia = hoy.getDate();
+        function generarCalendarioAutomatico() {
+            const hoy = new Date();
+            const mesActual = hoy.getMonth(); // 0 = Ene, 2 = Mar...
+            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             
-            // Resetear estilos base
-            for(let i=1; i<=4; i++) {
-                const el = document.getElementById(`sem-${i}`);
-                el.className = "relative p-3 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-400";
+            // Configuramos el inicio: Buscamos el primer lunes del mes actual
+            let primerLunes = new Date(hoy.getFullYear(), mesActual, 1);
+            while (primerLunes.getDay() !== 1) { // 1 es Lunes
+                primerLunes.setDate(primerLunes.getDate() + 1);
             }
         
-            let semanaActiva = 0;
-            if (dia >= 2 && dia <= 8) semanaActiva = 1;
-            else if (dia >= 9 && dia <= 15) semanaActiva = 2;
-            else if (dia >= 16 && dia <= 22) semanaActiva = 3;
-            else if (dia >= 23) semanaActiva = 4;
+            const contenedor = document.getElementById('seccion-calendario');
+            let htmlSemanas = "";
+            let diaHoy = hoy.getDate();
+            let mesHoy = hoy.getMonth();
         
-            if (semanaActiva > 0) {
-                const activo = document.getElementById(`sem-${semanaActiva}`);
-                activo.className = "relative p-3 rounded-2xl border-blue-500 bg-blue-50 text-blue-900 shadow-md scale-105 z-10";
-                activo.innerHTML += `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg">ACTUAL</span>`;
+            // Generamos las 4 semanas
+            for (let i = 0; i < 4; i++) {
+                let inicioSemana = new Date(primerLunes);
+                inicioSemana.setDate(primerLunes.getDate() + (i * 7));
+                
+                let finSemana = new Date(inicioSemana);
+                finSemana.setDate(inicioSemana.getDate() + 6);
+        
+                // Lógica de "Semana Actual"
+                const esSemanaActual = (hoy >= inicioSemana && hoy <= finSemana);
+                const estiloClase = esSemanaActual 
+                    ? "border-blue-500 bg-blue-50 text-blue-900 shadow-md scale-105 z-10" 
+                    : "border-slate-100 bg-slate-50 text-slate-400 opacity-60";
+                
+                const badgeActual = esSemanaActual ? `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg">ACTUAL</span>` : "";
+        
+                // Contenido de la semana (Sem 4 es Cuota Ordinaria)
+                const servicio = (i === 3) 
+                    ? '<i class="fas fa-house-user text-indigo-500"></i> CUOTA ORD.' 
+                    : '<i class="fas fa-truck-moving text-blue-500"></i> SERVICIO: PIPA';
+        
+                htmlSemanas += `
+                    <div class="relative p-3 rounded-2xl border-2 transition-all ${estiloClase}">
+                        ${badgeActual}
+                        <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana ${i + 1}</span>
+                        <p class="text-xs font-bold">${inicioSemana.getDate()} ${nombresMeses[mesActual].substring(0,3)} - ${finSemana.getDate()} ${nombresMeses[mesActual].substring(0,3)}</p>
+                        <div class="mt-2 flex items-center gap-2 text-[10px] font-black uppercase">
+                            ${servicio}
+                        </div>
+                    </div>
+                `;
             }
+        
+            contenedor.innerHTML = `
+                <div class="p-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
+                    <h3 class="text-indigo-800 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-calendar-alt"></i> CICLO: ${nombresMeses[mesActual].toUpperCase()} ${hoy.getFullYear()}
+                    </h3>
+                    <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Hoy: ${hoy.getDate()} ${nombresMeses[mesActual].substring(0,3)}</span>
+                </div>
+                <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    ${htmlSemanas}
+                </div>
+            `;
         }
-        
-        // Llama a la función al final de tu script
-        actualizarCalendario();
     </script>
 </body>
 </html>
+
 
