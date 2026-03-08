@@ -361,22 +361,21 @@
 
         function generarCalendarioAutomatico() {
             const hoy = new Date();
-            // FECHA SEMILLA: Lunes 2 de Marzo de 2026 (Inicio real de tu Semana 1)
+            // Normalizamos "hoy" para que compare solo fechas sin importar la hora exacta
+            const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            
+            // FECHA SEMILLA: Lunes 2 de Marzo de 2026
             const fechaSemilla = new Date(2026, 2, 2); 
             
-            // Calculamos cuántos días han pasado desde la semilla hasta hoy
-            const diferenciaDias = Math.floor((hoy - fechaSemilla) / (1000 * 60 * 60 * 24));
-            
-            // Determinamos en qué semana del ciclo de 4 estamos (0, 1, 2 o 3)
+            // Cálculo de diferencia de días exactos
+            const diferenciaDias = Math.floor((hoySoloFecha - fechaSemilla) / (1000 * 60 * 60 * 24));
             const semanasTranscurridasTotal = Math.floor(diferenciaDias / 7);
-            const indiceCicloActual = semanasTranscurridasTotal % 4; // Esto nos da 0, 1, 2 o 3
             
-            // Calculamos el inicio de la "Semana 1" del ciclo en el que estamos parados
             const inicioCicloActual = new Date(fechaSemilla);
             inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasTotal / 4) * 28));
         
             const contenedor = document.getElementById('seccion-calendario');
-            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
             let htmlSemanas = "";
         
             for (let i = 0; i < 4; i++) {
@@ -386,7 +385,9 @@
                 let finSemana = new Date(inicioSemana);
                 finSemana.setDate(inicioSemana.getDate() + 6);
         
-                const esSemanaActual = (hoy >= inicioSemana && hoy <= finSemana);
+                // Lógica de resaltado corregida (comparando solo fechas)
+                const esSemanaActual = (hoySoloFecha >= inicioSemana && hoySoloFecha <= finSemana);
+                
                 const estiloClase = esSemanaActual 
                     ? "border-blue-500 bg-blue-50 text-blue-900 shadow-md scale-105 z-10" 
                     : "border-slate-100 bg-slate-50 text-slate-400 opacity-60";
@@ -401,7 +402,10 @@
                     <div class="relative p-3 rounded-2xl border-2 transition-all ${estiloClase}">
                         ${badgeActual}
                         <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana ${i + 1}</span>
-                        <p class="text-[11px] font-bold">${inicioSemana.getDate()}/${inicioSemana.getMonth()+1} - ${finSemana.getDate()}/${finSemana.getMonth()+1}</p>
+                        <p class="text-[11px] font-bold">
+                            ${inicioSemana.getDate()} ${nombresMeses[inicioSemana.getMonth()]} - 
+                            ${finSemana.getDate()} ${nombresMeses[finSemana.getMonth()]}
+                        </p>
                         <div class="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
                             ${servicio}
                         </div>
@@ -409,12 +413,13 @@
                 `;
             }
         
+            // El resto del contenedor se mantiene igual
             contenedor.innerHTML = `
                 <div class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
                     <h3 class="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
                         <i class="fas fa-sync-alt fa-spin text-blue-400" style="--fa-animation-duration: 10s;"></i> CICLO DE SUMINISTRO PLAN B
                     </h3>
-                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">HOY: ${hoy.getDate()} ${nombresMeses[hoy.getMonth()].substring(0,3)}</span>
+                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold uppercase">Hoy: ${hoy.getDate()} ${nombresMeses[hoy.getMonth()]}</span>
                 </div>
                 <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 bg-white">
                     ${htmlSemanas}
@@ -424,6 +429,7 @@
     </script>
 </body>
 </html>
+
 
 
 
