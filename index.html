@@ -23,10 +23,18 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div class="text-center sm:text-left">
                     <h1 class="text-2xl font-black tracking-tight">Edificio F</h1>
-                    <div id="mes-actual" class="text-indigo-200 text-sm uppercase font-bold tracking-widest italic">Cargando...</div>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                        <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-bold tracking-widest bg-indigo-900/40 px-2 py-0.5 rounded-md inline-block">
+                            Cargando...
+                        </div>
+                        <div id="fecha-actualizacion" class="text-indigo-300 text-[10px] font-bold uppercase tracking-tight flex items-center justify-center sm:justify-start gap-1.5">
+                            <i class="fas fa-history opacity-70"></i> 
+                            <span>ACTUALIZANDO...</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-indigo-700/60 px-8 py-3 rounded-2xl border border-indigo-400/40 shadow-inner">
-                    <span class="block text-xs uppercase text-indigo-300 font-bold tracking-widest text-center mb-1">Fondo Total Recolectado</span>
+                <div class="bg-indigo-700/60 px-8 py-3 rounded-2xl border border-indigo-400/40 shadow-inner text-center">
+                    <span class="block text-xs uppercase text-indigo-300 font-bold tracking-widest mb-1">Fondo Total Recolectado</span>
                     <span id="gran-total-edificio" class="text-3xl font-black text-white">$0</span>
                 </div>
             </div>
@@ -146,7 +154,6 @@
                 <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3">
                     <i class="fas fa-bullhorn text-indigo-500 text-lg"></i> Comunicados y Acuerdos
                 </h3>
-                <span id="fecha-actualizacion" class="text-xs font-mono text-slate-400 font-bold">Act: -</span>
             </div>
             <div id="contenedor-avisos" class="p-6 space-y-6 text-base text-slate-600"></div>
         </div>
@@ -209,10 +216,17 @@
                     contenedor.innerHTML = "";
                     let sumaGeneralEdificio = 0;
 
+                    // Busca esta sección dentro de cargarDatos()
                     if(datos[0]) {
                         document.getElementById('mes-actual').innerText = datos[0][7] || "MES ACTUAL";
                         document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas.";
-                        document.getElementById('fecha-actualizacion').innerText = "ÚLTIMA ACTUALIZACIÓN: " + (datos[0][9] || "-");
+                        
+                        // MODIFICACIÓN AQUÍ: Mantener el icono y actualizar solo el texto
+                        const fechaTexto = datos[0][9] || "-";
+                        document.getElementById('fecha-actualizacion').innerHTML = `
+                            <i class="fas fa-check-circle text-emerald-400"></i> 
+                            INFORMACIÓN ACTUALIZADA AL: ${fechaTexto}
+                        `;
                     }
 
                     datos.forEach(col => {
@@ -347,37 +361,38 @@
 
         function generarCalendarioAutomatico() {
             const hoy = new Date();
-            const mesActual = hoy.getMonth(); // 0 = Ene, 2 = Mar...
-            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            // FECHA SEMILLA: Lunes 2 de Marzo de 2026 (Inicio real de tu Semana 1)
+            const fechaSemilla = new Date(2026, 2, 2); 
             
-            // Configuramos el inicio: Buscamos el primer lunes del mes actual
-            let primerLunes = new Date(hoy.getFullYear(), mesActual, 1);
-            while (primerLunes.getDay() !== 1) { // 1 es Lunes
-                primerLunes.setDate(primerLunes.getDate() + 1);
-            }
+            // Calculamos cuántos días han pasado desde la semilla hasta hoy
+            const diferenciaDias = Math.floor((hoy - fechaSemilla) / (1000 * 60 * 60 * 24));
+            
+            // Determinamos en qué semana del ciclo de 4 estamos (0, 1, 2 o 3)
+            const semanasTranscurridasTotal = Math.floor(diferenciaDias / 7);
+            const indiceCicloActual = semanasTranscurridasTotal % 4; // Esto nos da 0, 1, 2 o 3
+            
+            // Calculamos el inicio de la "Semana 1" del ciclo en el que estamos parados
+            const inicioCicloActual = new Date(fechaSemilla);
+            inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasTotal / 4) * 28));
         
             const contenedor = document.getElementById('seccion-calendario');
+            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             let htmlSemanas = "";
-            let diaHoy = hoy.getDate();
-            let mesHoy = hoy.getMonth();
         
-            // Generamos las 4 semanas
             for (let i = 0; i < 4; i++) {
-                let inicioSemana = new Date(primerLunes);
-                inicioSemana.setDate(primerLunes.getDate() + (i * 7));
+                let inicioSemana = new Date(inicioCicloActual);
+                inicioSemana.setDate(inicioCicloActual.getDate() + (i * 7));
                 
                 let finSemana = new Date(inicioSemana);
                 finSemana.setDate(inicioSemana.getDate() + 6);
         
-                // Lógica de "Semana Actual"
                 const esSemanaActual = (hoy >= inicioSemana && hoy <= finSemana);
                 const estiloClase = esSemanaActual 
                     ? "border-blue-500 bg-blue-50 text-blue-900 shadow-md scale-105 z-10" 
                     : "border-slate-100 bg-slate-50 text-slate-400 opacity-60";
                 
-                const badgeActual = esSemanaActual ? `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg">ACTUAL</span>` : "";
+                const badgeActual = esSemanaActual ? `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg animate-pulse">ACTUAL</span>` : "";
         
-                // Contenido de la semana (Sem 4 es Cuota Ordinaria)
                 const servicio = (i === 3) 
                     ? '<i class="fas fa-house-user text-indigo-500"></i> CUOTA ORD.' 
                     : '<i class="fas fa-truck-moving text-blue-500"></i> SERVICIO: PIPA';
@@ -386,8 +401,8 @@
                     <div class="relative p-3 rounded-2xl border-2 transition-all ${estiloClase}">
                         ${badgeActual}
                         <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana ${i + 1}</span>
-                        <p class="text-xs font-bold">${inicioSemana.getDate()} ${nombresMeses[mesActual].substring(0,3)} - ${finSemana.getDate()} ${nombresMeses[mesActual].substring(0,3)}</p>
-                        <div class="mt-2 flex items-center gap-2 text-[10px] font-black uppercase">
+                        <p class="text-[11px] font-bold">${inicioSemana.getDate()}/${inicioSemana.getMonth()+1} - ${finSemana.getDate()}/${finSemana.getMonth()+1}</p>
+                        <div class="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
                             ${servicio}
                         </div>
                     </div>
@@ -395,13 +410,13 @@
             }
         
             contenedor.innerHTML = `
-                <div class="p-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
-                    <h3 class="text-indigo-800 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-calendar-alt"></i> CICLO: ${nombresMeses[mesActual].toUpperCase()} ${hoy.getFullYear()}
+                <div class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-sync-alt fa-spin text-blue-400" style="--fa-animation-duration: 10s;"></i> CICLO DE SUMINISTRO PLAN B
                     </h3>
-                    <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Hoy: ${hoy.getDate()} ${nombresMeses[mesActual].substring(0,3)}</span>
+                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">HOY: ${hoy.getDate()} ${nombresMeses[hoy.getMonth()].substring(0,3)}</span>
                 </div>
-                <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 bg-white">
                     ${htmlSemanas}
                 </div>
             `;
@@ -409,6 +424,7 @@
     </script>
 </body>
 </html>
+
 
 
 
