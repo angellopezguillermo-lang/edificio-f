@@ -38,9 +38,15 @@
                         <span class="block text-[10px] uppercase text-indigo-300 font-bold tracking-widest mb-1">Fondo Recolectado</span>
                         <span id="gran-total-edificio" class="text-2xl font-black text-white">$0</span>
                     </div>
-                    <div class="bg-emerald-700/60 px-6 py-3 rounded-2xl border border-emerald-400/40 shadow-inner text-center">
-                        <span class="block text-[10px] uppercase text-emerald-300 font-bold tracking-widest mb-1">Fondo Pozo Profundo</span>
-                        <span id="total-pozo-recolectado" class="text-2xl font-black text-white">$0</span>
+                    <div class="bg-emerald-700/60 px-6 py-3 rounded-2xl border border-emerald-400/40 shadow-inner text-center min-w-[200px]">
+                        <span class="block text-[10px] uppercase text-emerald-300 font-bold tracking-widest mb-1 text-center">Fondo Pozo Profundo</span>
+                        <div class="flex items-center justify-center gap-3">
+                            <span id="total-pozo-recolectado" class="text-2xl font-black text-white">$0</span>
+                            <span id="porcentaje-pozo-global" class="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black shadow-sm">0%</span>
+                        </div>
+                        <div class="w-full bg-emerald-900/40 rounded-full h-1.5 mt-2 overflow-hidden border border-emerald-500/20">
+                            <div id="barra-pozo-global" class="bg-emerald-400 h-full transition-all duration-1000 shadow-[0_0_8px_rgba(52,211,153,0.5)]" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -234,7 +240,11 @@
                         `;
                     }
     
+                    const formatoMoneda = (valor) => valor.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 });
+
                     datos.forEach(col => {
+                        if (!col[0]) return; // Saltar filas vacías
+                    
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
@@ -244,15 +254,14 @@
                         const s2 = parseFloat(col[11]) || 0;
                         const s3 = parseFloat(col[12]) || 0;
                         const multaMonto = parseFloat(col[13]) || 0;
-                        const multaMotivo = col[14] || "Sanción"; // Corregido: Obtenemos el motivo
+                        const multaMotivo = col[14] || "Sanción"; 
                         const multaPagada = col[15]?.trim().toLowerCase() === 'pagado';
                     
-                        // --- LÓGICA COOPERACIÓN POZO ---
                         const metaPozo = 6000;
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
-    
-                        // CÁLCULO TOTAL POR VECINO
+                    
+                        // CÁLCULO TOTAL POR VECINO (Sumamos solo lo que ya pagó)
                         let totalVecinoOperativo = 0;
                         if (aguaPagado) totalVecinoOperativo += cuotaAguaMonto;
                         if (rioPagado) totalVecinoOperativo += cuotaRioMonto;
@@ -355,9 +364,28 @@
                         contenedor.appendChild(tarjeta);
                     });
     
-                    // Actualizar grandes totales al final de todo el procesamiento
-                    document.getElementById('gran-total-edificio').innerText = `$${sumaGeneralEdificio.toLocaleString()}`;
-                    document.getElementById('total-pozo-recolectado').innerText = `$${sumaPozoTotal.toLocaleString()}`;
+                    // --- ACTUALIZACIÓN DE TOTALES EN EL HEADER ---
+                    const META_GLOBAL_POZO = 48000; 
+                    const porcentajeGlobal = Math.min((sumaPozoTotal / META_GLOBAL_POZO) * 100, 100);
+                    
+                    // Actualizamos los textos con formato de moneda
+                    document.getElementById('gran-total-edificio').innerText = `$${sumaGeneralEdificio.toLocaleString('es-MX', {minimumFractionDigits: 0})}`;
+                    document.getElementById('total-pozo-recolectado').innerText = `$${sumaPozoTotal.toLocaleString('es-MX', {minimumFractionDigits: 0})}`;
+                    
+                    // Actualizamos la gráfica de progreso global
+                    const barraGlobal = document.getElementById('barra-pozo-global');
+                    const porcentajeTexto = document.getElementById('porcentaje-pozo-global');
+                    
+                    porcentajeTexto.innerText = `${Math.round(porcentajeGlobal)}%`;
+                    barraGlobal.style.width = `${porcentajeGlobal}%`;
+                    
+                    // Feedback visual de meta cumplida
+                    if(porcentajeGlobal >= 100) {
+                        barraGlobal.classList.remove('bg-emerald-400');
+                        barraGlobal.classList.add('bg-yellow-400', 'shadow-[0_0_12px_rgba(250,204,21,0.6)]');
+                        porcentajeTexto.classList.replace('bg-emerald-500', 'bg-yellow-500');
+                        porcentajeTexto.innerHTML = '¡META LOGRADA! 🎉';
+                    }
                 }
             });
         }
@@ -436,9 +464,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
