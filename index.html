@@ -33,9 +33,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-indigo-700/60 px-8 py-3 rounded-2xl border border-indigo-400/40 shadow-inner text-center">
-                    <span class="block text-xs uppercase text-indigo-300 font-bold tracking-widest mb-1">Fondo Total Recolectado</span>
-                    <span id="gran-total-edificio" class="text-3xl font-black text-white">$0</span>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="bg-indigo-700/60 px-6 py-3 rounded-2xl border border-indigo-400/40 shadow-inner text-center">
+                        <span class="block text-[10px] uppercase text-indigo-300 font-bold tracking-widest mb-1">Fondo Recolectado</span>
+                        <span id="gran-total-edificio" class="text-2xl font-black text-white">$0</span>
+                    </div>
+                    <div class="bg-emerald-700/60 px-6 py-3 rounded-2xl border border-emerald-400/40 shadow-inner text-center">
+                        <span class="block text-[10px] uppercase text-emerald-300 font-bold tracking-widest mb-1">Fondo Pozo Profundo</span>
+                        <span id="total-pozo-recolectado" class="text-2xl font-black text-white">$0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,24 +178,23 @@
     <script>
         const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=670752080&single=true&output=csv";
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
-
+    
         function copiarTarjeta() {
             const numero = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
             const btn = document.getElementById('btn-copiar');
-            
             navigator.clipboard.writeText(numero).then(() => {
                 const iconoOriginal = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i>';
                 btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
-                
                 setTimeout(() => {
                     btn.innerHTML = iconoOriginal;
                     btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
                 }, 2000);
             });
         }
-
+    
         async function cargarDatos() {
+            // 1. CARGAR AVISOS
             Papa.parse(URL_AVISOS, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
@@ -207,28 +212,28 @@
                     });
                 }
             });
-
+    
+            // 2. CARGAR CUOTAS Y UNIDADES
             Papa.parse(URL_CUOTAS, {
                 download: true, header: false, skipEmptyLines: true,
                 complete: function(results) {
                     const datos = results.data.slice(1);
                     const contenedor = document.getElementById('contenedor-unidades');
                     contenedor.innerHTML = "";
-                    let sumaGeneralEdificio = 0;
-
-                    // Busca esta sección dentro de cargarDatos()
+                    
+                    let sumaGeneralEdificio = 0; 
+                    let sumaPozoTotal = 0;      
+    
                     if(datos[0]) {
                         document.getElementById('mes-actual').innerText = datos[0][7] || "MES ACTUAL";
                         document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas.";
-                        
-                        // MODIFICACIÓN AQUÍ: Mantener el icono y actualizar solo el texto
                         const fechaTexto = datos[0][9] || "-";
                         document.getElementById('fecha-actualizacion').innerHTML = `
                             <i class="fas fa-check-circle text-emerald-400"></i> 
                             INFORMACIÓN ACTUALIZADA AL: ${fechaTexto}
                         `;
                     }
-
+    
                     datos.forEach(col => {
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
@@ -239,23 +244,24 @@
                         const s2 = parseFloat(col[11]) || 0;
                         const s3 = parseFloat(col[12]) || 0;
                         const multaMonto = parseFloat(col[13]) || 0;
-                        const multaMotivo = col[14] || "";
+                        const multaMotivo = col[14] || "Sanción"; // Corregido: Obtenemos el motivo
                         const multaPagada = col[15]?.trim().toLowerCase() === 'pagado';
-
-                        // --- NUEVA LÓGICA COOPERACIÓN POZO (COL Q = ÍNDICE 16) ---
+                    
+                        // --- LÓGICA COOPERACIÓN POZO ---
                         const metaPozo = 6000;
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
-
-                        let totalVecino = 0;
-                        if (aguaPagado) totalVecino += cuotaAguaMonto;
-                        if (rioPagado) totalVecino += cuotaRioMonto;
-                        if (multaPagada) totalVecino += multaMonto;
-                        totalVecino += (s1 + s2 + s3);
-                        totalVecino += pozoAbonado; // Se suma el pozo al total del vecino
-                        
-                        sumaGeneralEdificio += totalVecino;
-
+    
+                        // CÁLCULO TOTAL POR VECINO
+                        let totalVecinoOperativo = 0;
+                        if (aguaPagado) totalVecinoOperativo += cuotaAguaMonto;
+                        if (rioPagado) totalVecinoOperativo += cuotaRioMonto;
+                        if (multaPagada) totalVecinoOperativo += multaMonto;
+                        totalVecinoOperativo += (s1 + s2 + s3);
+                    
+                        sumaGeneralEdificio += totalVecinoOperativo;
+                        sumaPozoTotal += pozoAbonado;
+    
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
                         
@@ -263,7 +269,7 @@
                         if(s1 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
                         if(s2 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
                         if(s3 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
-
+    
                         let htmlPlanB = (s1 + s2 + s3 > 0) ? `
                             <div class="px-6 pb-4">
                                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-blue-900">
@@ -272,9 +278,8 @@
                                     </p>
                                     <div class="text-sm space-y-2 font-bold">${desglosePlanB}</div>
                                 </div>
-                            </div>
-                        ` : '';
-
+                            </div>` : '';
+    
                         let htmlMulta = multaMonto > 0 ? `
                             <div class="px-6 pb-4">
                                 <div class="${multaPagada ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border-2 rounded-2xl p-4 flex justify-between items-center">
@@ -287,10 +292,8 @@
                                     </div>
                                     <div class="${multaPagada ? 'text-green-600' : 'text-orange-600'} font-black text-2xl">+$${multaMonto}</div>
                                 </div>
-                            </div>
-                        ` : '';
-
-                        // Bloque visual del Pozo
+                            </div>` : '';
+    
                         let htmlPozo = `
                             <div class="px-6 pb-4">
                                 <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
@@ -313,9 +316,8 @@
                                         <span class="text-[9px] text-indigo-400 font-black">${Math.round(porcentajePozo)}%</span>
                                     </div>
                                 </div>
-                            </div>
-                        `;
-
+                            </div>`;
+    
                         tarjeta.innerHTML = `
                             <div class="p-6 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                                 <div>
@@ -324,7 +326,7 @@
                                 </div>
                                 <div class="text-right">
                                     <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Abonado Total</span>
-                                    <div class="text-3xl font-black text-indigo-600 leading-none">$${totalVecino}</div>
+                                    <div class="text-3xl font-black text-indigo-600 leading-none">$${totalVecinoOperativo}</div>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-50 mb-4 text-center">
@@ -352,13 +354,18 @@
                         `;
                         contenedor.appendChild(tarjeta);
                     });
+    
+                    // Actualizar grandes totales al final de todo el procesamiento
                     document.getElementById('gran-total-edificio').innerText = `$${sumaGeneralEdificio.toLocaleString()}`;
+                    document.getElementById('total-pozo-recolectado').innerText = `$${sumaPozoTotal.toLocaleString()}`;
                 }
             });
         }
+        
+        // Ejecutar funciones al cargar
         cargarDatos();
         generarCalendarioAutomatico();
-
+        
         function generarCalendarioAutomatico() {
             const hoy = new Date();
             // Normalizamos "hoy" para que compare solo fechas sin importar la hora exacta
@@ -429,6 +436,7 @@
     </script>
 </body>
 </html>
+
 
 
 
