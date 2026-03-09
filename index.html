@@ -396,18 +396,22 @@
         
         function generarCalendarioAutomatico() {
             const hoy = new Date();
-            // Normalizamos "hoy" para que compare solo fechas sin importar la hora exacta
+            // Normalizamos "hoy" para comparar solo fechas
             const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
             
-            // FECHA SEMILLA: Lunes 2 de Marzo de 2026
+            // CONFIGURACIÓN DEL COMITÉ
+            // Fecha semilla: Lunes 2 de Marzo de 2026 (Semana 49)
             const fechaSemilla = new Date(2026, 2, 2); 
+            const SEMANA_BASE_COMITE = 49; 
+        
+            // Cálculo de la semana actual del comité
+            const msPorSemana = 1000 * 60 * 60 * 24 * 7;
+            const semanasTranscurridasDesdeSemilla = Math.floor((hoySoloFecha - fechaSemilla) / msPorSemana);
+            const semanaActualDelComite = SEMANA_BASE_COMITE + semanasTranscurridasDesdeSemilla;
             
-            // Cálculo de diferencia de días exactos
-            const diferenciaDias = Math.floor((hoySoloFecha - fechaSemilla) / (1000 * 60 * 60 * 24));
-            const semanasTranscurridasTotal = Math.floor(diferenciaDias / 7);
-            
+            // Lógica de ciclos de 28 días (4 semanas) para el diseño visual
             const inicioCicloActual = new Date(fechaSemilla);
-            inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasTotal / 4) * 28));
+            inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasDesdeSemilla / 4) * 28));
         
             const contenedor = document.getElementById('seccion-calendario');
             const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -420,14 +424,16 @@
                 let finSemana = new Date(inicioSemana);
                 finSemana.setDate(inicioSemana.getDate() + 6);
         
-                // Lógica de resaltado corregida (comparando solo fechas)
                 const esSemanaActual = (hoySoloFecha >= inicioSemana && hoySoloFecha <= finSemana);
+                
+                // Calculamos qué número de semana del comité le corresponde a este cuadro
+                const numSemanaCuadro = SEMANA_BASE_COMITE + Math.floor((inicioSemana - fechaSemilla) / msPorSemana);
                 
                 const estiloClase = esSemanaActual 
                     ? "border-blue-500 bg-blue-50 text-blue-900 shadow-md scale-105 z-10" 
                     : "border-slate-100 bg-slate-50 text-slate-400 opacity-60";
                 
-                const badgeActual = esSemanaActual ? `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg animate-pulse">ACTUAL</span>` : "";
+                const badgeActual = esSemanaActual ? `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg animate-pulse">ESTAMOS AQUÍ</span>` : "";
         
                 const servicio = (i === 3) 
                     ? '<i class="fas fa-house-user text-indigo-500"></i> CUOTA ORD.' 
@@ -436,7 +442,7 @@
                 htmlSemanas += `
                     <div class="relative p-3 rounded-2xl border-2 transition-all ${estiloClase}">
                         ${badgeActual}
-                        <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana ${i + 1}</span>
+                        <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana ${numSemanaCuadro}</span>
                         <p class="text-[11px] font-bold">
                             ${inicioSemana.getDate()} ${nombresMeses[inicioSemana.getMonth()]} - 
                             ${finSemana.getDate()} ${nombresMeses[finSemana.getMonth()]}
@@ -448,13 +454,15 @@
                 `;
             }
         
-            // El resto del contenedor se mantiene igual
             contenedor.innerHTML = `
-                <div class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
-                    <h3 class="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-sync-alt fa-spin text-blue-400" style="--fa-animation-duration: 10s;"></i> CICLO DE SUMINISTRO PLAN B
+                <div class="p-4 bg-slate-900 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <h3 class="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2 text-center sm:text-left">
+                        <i class="fas fa-calendar-check text-blue-400"></i> 
+                        PLAN B: SEMANA ${semanaActualDelComite} DEL COMITÉ
                     </h3>
-                    <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold uppercase">Hoy: ${hoy.getDate()} ${nombresMeses[hoy.getMonth()]}</span>
+                    <span class="text-[10px] bg-blue-600 text-white px-3 py-1 rounded-full font-bold uppercase shadow-sm">
+                        Hoy: ${hoy.getDate()} ${nombresMeses[hoy.getMonth()]}
+                    </span>
                 </div>
                 <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 bg-white">
                     ${htmlSemanas}
@@ -464,4 +472,5 @@
     </script>
 </body>
 </html>
+
 
