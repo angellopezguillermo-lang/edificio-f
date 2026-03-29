@@ -201,12 +201,15 @@
     
         async function cargarDatos() {
             try {
-                const respuesta = await fetch(urlCSV);
+                const respuesta = await fetch(URL_CUOTAS); 
                 const texto = await respuesta.text();
                 const filas = texto.split('\n').slice(1);
-                const datos = filas.map(fila => fila.split(','));
+                const datos = filas.map(fila => {
+                    const separador = fila.includes(';') ? ';' : ',';
+                    return fila.split(separador);
+                });
         
-                const contenedor = document.getElementById('contenedor-vecinos');
+                const contenedor = document.getElementById('contenedor-unidades');
                 contenedor.innerHTML = '';
         
                 let sumaGeneralEdificio = 0;
@@ -348,12 +351,12 @@
                 });
         
                 // Actualizar contadores superiores
-                document.getElementById('total-recolectado').textContent = `$${sumaGeneralEdificio.toLocaleString()}`;
-                document.getElementById('total-pozo').textContent = `$${sumaPozoEdificio.toLocaleString()}`;
+                document.getElementById('gran-total-edificio').textContent = `$${sumaGeneralEdificio.toLocaleString()}`;
+                document.getElementById('total-pozo-recolectado').textContent = `$${sumaPozoEdificio.toLocaleString()}`;
                 
                 const porcentajePozo = Math.min((sumaPozoEdificio / 6000) * 100, 100);
-                document.getElementById('barra-pozo').style.width = `${porcentajePozo}%`;
-                document.getElementById('porcentaje-pozo-texto').textContent = `${Math.round(porcentajePozo)}%`;
+                document.getElementById('barra-pozo-global').style.width = `${porcentajePozo}%`;
+                document.getElementById('porcentaje-pozo-global').textContent = `${Math.round(porcentajePozo)}%`;
         
             } catch (error) {
                 console.error("Error al cargar los datos:", error);
