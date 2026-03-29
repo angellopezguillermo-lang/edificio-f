@@ -18,18 +18,18 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans pb-10">
 
-    <header class="bg-indigo-800 text-white shadow-xl relative sm:sticky top-0 z-50">
+    <header class="bg-indigo-800 text-white shadow-xl sticky top-0 z-50">
         <div class="max-w-5xl mx-auto p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div class="text-center sm:text-left">
                     <h1 class="text-2xl font-black tracking-tight">Edificio F</h1>
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
                         <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-bold tracking-widest bg-indigo-900/40 px-2 py-0.5 rounded-md inline-block">
-                            Cargando...
+                            MARZO
                         </div>
                         <div id="fecha-actualizacion" class="text-indigo-300 text-[10px] font-bold uppercase tracking-tight flex items-center justify-center sm:justify-start gap-1.5">
                             <i class="fas fa-history opacity-70"></i> 
-                            <span>ACTUALIZANDO...</span>
+                            <span id="txt-actualizacion">ACTUALIZANDO...</span>
                         </div>
                     </div>
                 </div>
@@ -55,31 +55,15 @@
 
     <main class="max-w-5xl mx-auto p-4 space-y-8">
 
-        <section id="seccion-calendario" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-        </section>
+        <section id="seccion-calendario" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"></section>
 
         <section class="space-y-6">
-            <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3 px-2">
-                <i class="fas fa-gavel text-indigo-500 text-lg"></i> Reglas y Acuerdos Vigentes
-            </h3>
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-blue-500 border border-slate-200">
                     <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-1">Cuota de Mantenimiento</span>
                     <p class="text-sm font-bold text-slate-700">$170.00 Mensuales</p>
-                    <p class="text-xs text-slate-500 mt-1">Límite: día 10. A partir del día 11 se suspende el servicio de agua (Reconexión $150).</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-orange-500 border border-slate-200">
-                    <span class="text-[10px] font-black text-orange-600 uppercase tracking-widest block mb-1">Multa de Convivencia</span>
-                    <p class="text-sm font-bold text-slate-700">$250.00 por Falta</p>
-                    <p class="text-xs text-slate-500 mt-1">Ruido excesivo (>10PM), obstruir escaleras o dejar basura en áreas comunes.</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-red-500 border border-slate-200">
-                    <span class="text-[10px] font-black text-red-600 uppercase tracking-widest block mb-1">Asambleas Anuales</span>
-                    <p class="text-sm font-bold text-slate-700">$500.00 Inasistencia</p>
-                    <p class="text-xs text-slate-500 mt-1">Aplica para reuniones de cambio de comité. Incluye corte de agua automático.</p>
-                </div>
-            </div>
 
             <div class="bg-white border-2 border-indigo-100 rounded-2xl p-6 shadow-sm">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -88,94 +72,19 @@
                             <i class="fas fa-university"></i>
                         </div>
                         <div>
-                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest leading-none">Datos para Depósito / Transferencia</h4>
+                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest leading-none">Datos para Depósito</h4>
                             <p class="text-lg font-black text-slate-800 mt-1">Virna Díaz Velásquez</p>
                         </div>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                        <div class="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 flex-1">
-                            <span class="block text-[10px] uppercase text-slate-400 font-bold tracking-tighter">Banco</span>
-                            <span class="text-sm font-bold text-slate-700 uppercase">Santander</span>
-                        </div>
-                        <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200 flex-1 flex justify-between items-center gap-4">
-                            <div>
-                                <span class="block text-[10px] uppercase text-indigo-400 font-bold tracking-tighter">Número de Tarjeta</span>
-                                <span id="num-tarjeta" class="text-sm font-mono font-bold text-indigo-800 tracking-wider">5579 1001 3565 7797</span>
-                            </div>
-                            <button onclick="copiarTarjeta()" id="btn-copiar" class="bg-white text-indigo-600 p-2 rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all active:scale-90" title="Copiar número">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <p class="mt-4 text-[11px] text-slate-400 text-center italic">Por favor, envía tu comprobante vía WhatsApp una vez realizado el pago.</p>
-            </div>
-
-            <div class="bg-indigo-900 text-indigo-100 p-6 rounded-2xl shadow-lg">
-                <h4 class="text-xs font-black uppercase tracking-[0.2em] mb-4 border-b border-indigo-700 pb-2">Recordatorios de Seguridad y Convivencia</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                    <div class="flex gap-3">
-                        <i class="fas fa-door-closed text-indigo-400 mt-1"></i>
-                        <p><span class="font-bold text-white">Seguridad:</span> Es obligatorio mantener las puertas de acceso cerradas. Dejarlas abiertas compromete la seguridad de todos.</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <i class="fas fa-car-side text-indigo-400 mt-1"></i>
-                        <p><span class="font-bold text-white">Estacionamiento:</span> Favor de respetar los cajones asignados. Obstruir el paso genera sanción inmediata de $250.</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <i class="fas fa-paw text-indigo-400 mt-1"></i>
-                        <p><span class="font-bold text-white">Mascotas:</span> Deben estar registradas en el censo. Cualquier daño o suciedad en áreas comunes es responsabilidad del dueño.</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <i class="fas fa-id-card text-indigo-400 mt-1"></i>
-                        <p><span class="font-bold text-white">Nuevos Inquilinos:</span> Depósito de $3,000, copia de INE y firma de reglamento son requisitos para mudanza.</p>
+                    <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200 flex justify-between items-center gap-4">
+                        <span id="num-tarjeta" class="text-sm font-mono font-bold text-indigo-800 tracking-wider">5579 1001 3565 7797</span>
+                        <button onclick="copiarTarjeta()" id="btn-copiar" class="bg-white text-indigo-600 p-2 rounded-lg border border-indigo-200">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </section>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-5 bg-slate-50 border-b border-slate-100">
-                <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3">
-                    <i class="fas fa-folder-open text-amber-500 text-lg"></i> Biblioteca de Documentos
-                </h3>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="Acta asamblea ordinaria 8 feb 26 y lista F.pdf" target="_blank" class="group flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm font-black text-slate-800 uppercase leading-tight">Acta de Asamblea</div>
-                                <div class="text-xs text-slate-500 font-bold">Reunión Feb 8, 2026</div>
-                            </div>
-                        </div>
-                        <i class="fas fa-chevron-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
-                    </a>
-                    <div class="flex items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl opacity-50 text-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Próximos documentos aquí</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3">
-                    <i class="fas fa-bullhorn text-indigo-500 text-lg"></i> Comunicados y Acuerdos
-                </h3>
-            </div>
-            <div id="contenedor-avisos" class="p-6 space-y-6 text-base text-slate-600"></div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-indigo-800 font-bold text-sm mb-3 uppercase flex items-center gap-3 tracking-widest">
-                <i class="fas fa-water text-blue-500 text-lg"></i> GESTIÓN DE LIMPIEZA (RÍO)
-            </h3>
-            <p class="text-slate-700 text-base leading-relaxed border-l-4 border-blue-100 pl-4 italic" id="nota-rio">-</p>
-        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="contenedor-unidades"></div>
 
@@ -183,127 +92,49 @@
 
     <script>
         const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=670752080&single=true&output=csv";
-        const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
-    
-        function copiarTarjeta() {
-            const numero = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
-            const btn = document.getElementById('btn-copiar');
-            navigator.clipboard.writeText(numero).then(() => {
-                const iconoOriginal = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
-                setTimeout(() => {
-                    btn.innerHTML = iconoOriginal;
-                    btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-                }, 2000);
-            });
-        }
-    
+
         async function cargarDatos() {
             try {
-                const respuesta = await fetch(URL_CUOTAS); 
+                const respuesta = await fetch(URL_CUOTAS);
                 const texto = await respuesta.text();
                 const filas = texto.split('\n').slice(1);
-                const datos = filas.map(fila => {
-                    const separador = fila.includes(';') ? ';' : ',';
-                    return fila.split(separador);
-                });
-        
+                
                 const contenedor = document.getElementById('contenedor-unidades');
                 contenedor.innerHTML = '';
-        
+
                 let sumaGeneralEdificio = 0;
                 let sumaPozoEdificio = 0;
-        
-                datos.forEach(col => {
+
+                filas.forEach(fila => {
+                    const col = fila.split(',');
                     if (col[0]) {
-                        // 1. Datos Básicos
                         const depto = col[0].trim();
                         const vecino = col[1] || "Residente";
-                        
-                        // 2. Cuota Ordinaria (Agua - Columnas C y D)
                         const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
                         const fechaAgua = col[3] || "N/A";
-                        const cuotaAguaMonto = 170;
-        
-                        // 3. Cuota Río (Columnas E, F, G)
                         const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
                         const fechaRio = col[6] || "N/A";
-        
-                        // 4. PLAN B - SEMANAS (Columnas K, L, M -> Índices 10, 11, 12)
+                        
+                        // Plan B y Multas
                         const s1 = parseFloat(col[10]) || 0;
                         const s2 = parseFloat(col[11]) || 0;
                         const s3 = parseFloat(col[12]) || 0;
                         const totalPlanB = s1 + s2 + s3;
-        
-                        // 5. MULTAS (Columnas N, O, P -> Índices 13, 14, 15)
                         const multaMonto = parseFloat(col[13]) || 0;
-                        const multaMotivo = col[14] || "Sanción";
                         const multaEstatus = col[15]?.trim().toLowerCase() === 'pagado';
-        
-                        // 6. POZO Y SALDO FAVOR (Columnas Q y R -> Índices 16, 17)
-                        const abonoPozo = parseFloat(col[16]) || 0;
-                        const saldoFavor = parseFloat(col[17]) || 0;
-        
-                        // --- CÁLCULO DE TOTALES POR VECINO ---
-                        let totalAbonadoVecino = 0;
-                        if (aguaPagado) totalAbonadoVecino += cuotaAguaMonto;
-                        totalAbonadoVecino += totalPlanB; // Suma directa de lo pagado en semanas
-                        if (multaEstatus) totalAbonadoVecino += multaMonto;
-                        totalAbonadoVecino += abonoPozo;
-        
-                        // Acumuladores Generales (Superiores)
-                        sumaGeneralEdificio += (aguaPagado ? cuotaAguaMonto : 0) + totalPlanB + (multaEstatus ? multaMonto : 0);
-                        sumaPozoEdificio += abonoPozo;
-        
-                        // --- CONSTRUCCIÓN DE COMPONENTES HTML (Respetando tu diseño) ---
                         
-                        // Bloque Plan B (Solo si hay pagos o saldo)
-                        let htmlPlanB = '';
-                        if (totalPlanB > 0) {
-                            htmlPlanB = `
-                            <div class="px-6 pb-4">
-                                <div class="bg-blue-50 border-blue-100 border rounded-2xl p-4">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span class="text-blue-600">📦</span>
-                                        <h4 class="text-[10px] font-black uppercase text-blue-600 tracking-widest">Plan B (Pipas)</h4>
-                                    </div>
-                                    ${s1 > 0 ? `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-600 font-bold">Semana 1 (Pipa)</span><span class="text-xs font-black text-blue-700">$${s1}</span></div>` : ''}
-                                    ${s2 > 0 ? `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-600 font-bold">Semana 2 (Pipa)</span><span class="text-xs font-black text-blue-700">$${s2}</span></div>` : ''}
-                                    ${s3 > 0 ? `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-600 font-bold">Semana 3 (Pipa)</span><span class="text-xs font-black text-blue-700">$${s3}</span></div>` : ''}
-                                </div>
-                            </div>`;
-                        }
-        
-                        // Bloque Saldo a Favor (Nuevo)
-                        let htmlSaldoFavor = saldoFavor > 0 ? `
-                        <div class="px-6 pb-4">
-                            <div class="bg-emerald-50 border-emerald-200 border-2 rounded-2xl p-4 flex justify-between items-center text-emerald-700">
-                                <div>
-                                    <p class="text-[10px] font-black uppercase tracking-widest">Saldo a Favor Plan B</p>
-                                    <p class="text-[10px] font-bold italic opacity-80">Disponible para el ciclo</p>
-                                </div>
-                                <div class="font-black text-xl">+$${saldoFavor}</div>
-                            </div>
-                        </div>` : '';
-        
-                        // Bloque Multa
-                        let htmlMulta = multaMonto > 0 ? `
-                        <div class="px-6 pb-4">
-                            <div class="${multaEstatus ? 'bg-slate-50' : 'bg-red-50'} border-2 rounded-2xl p-4">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <p class="text-[10px] font-black uppercase ${multaEstatus ? 'text-slate-500' : 'text-red-600'}">${multaMotivo}</p>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${multaEstatus ? 'bg-green-100 text-green-700' : 'bg-red-200 text-red-800'}">
-                                            ${multaEstatus ? 'LIQUIDADO' : 'PENDIENTE'}
-                                        </span>
-                                    </div>
-                                    <div class="text-xl font-black ${multaEstatus ? 'text-slate-400' : 'text-red-600'}">$${multaMonto}</div>
-                                </div>
-                            </div>
-                        </div>` : '';
-        
-                        // Crear Tarjeta Completa
+                        // Pozo
+                        const abonoPozo = parseFloat(col[16]) || 0;
+                        const metaPozoIndividual = 6000;
+                        const porcPozo = Math.min((abonoPozo / metaPozoIndividual) * 100, 100);
+
+                        // Cálculo Total Abonado
+                        let totalAbonadoVecino = (aguaPagado ? 170 : 0) + totalPlanB + (multaEstatus ? multaMonto : 0) + abonoPozo;
+                        
+                        sumaGeneralEdificio += (aguaPagado ? 170 : 0) + totalPlanB + (multaEstatus ? multaMonto : 0);
+                        sumaPozoEdificio += abonoPozo;
+
+                        // Construcción de la Tarjeta (DISEÑO ORIGINAL)
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden flex flex-col transition-all hover:shadow-md";
                         tarjeta.innerHTML = `
@@ -313,137 +144,87 @@
                                     <h3 class="text-5xl font-black text-slate-800 tracking-tighter">${depto}</h3>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 text-right">Abonado Total</p>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Abonado Total</p>
                                     <div class="text-4xl font-black text-indigo-600 tracking-tighter">$${totalAbonadoVecino}</div>
                                 </div>
                             </div>
-        
+
                             <div class="px-6 grid grid-cols-2 gap-3 mb-4">
-                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Agua ($170)</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="${aguaPagado ? 'text-green-500' : 'text-red-500'} text-lg">●</span>
-                                        <span class="text-xs font-black text-slate-700">${aguaPagado ? 'PAGADO' : 'PENDIENTE'}</span>
-                                    </div>
-                                    <p class="text-[9px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaAgua}</p>
+                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-center">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Agua ($170)</p>
+                                    <span class="text-[10px] font-black ${aguaPagado ? 'text-green-600' : 'text-red-600'} flex items-center justify-center gap-1">
+                                        <i class="fas fa-check-circle"></i> ${aguaPagado ? 'PAGADO' : 'PENDIENTE'}
+                                    </span>
+                                    <p class="text-[8px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaAgua}</p>
                                 </div>
-                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Río ($0)</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="${rioPagado ? 'text-green-500' : 'text-red-500'} text-lg">●</span>
-                                        <span class="text-xs font-black text-slate-700">${rioPagado ? 'PAGADO' : 'PENDIENTE'}</span>
-                                    </div>
-                                    <p class="text-[9px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaRio}</p>
+                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-center">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Río ($0)</p>
+                                    <span class="text-[10px] font-black ${rioPagado ? 'text-green-600' : 'text-red-600'} flex items-center justify-center gap-1">
+                                        <i class="fas fa-check-circle"></i> ${rioPagado ? 'PAGADO' : 'PENDIENTE'}
+                                    </span>
+                                    <p class="text-[8px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaRio}</p>
                                 </div>
                             </div>
-        
-                            ${htmlPlanB}
-                            ${htmlSaldoFavor}
-                            ${htmlMulta}
-        
+
+                            <div class="px-6 pb-4">
+                                <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <h4 class="text-[9px] font-black uppercase text-indigo-600 tracking-widest">Cooperación Pozo Profundo</h4>
+                                        <span class="text-sm font-black text-indigo-700">$${abonoPozo}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 rounded-full h-1.5 mb-2 overflow-hidden">
+                                        <div class="bg-indigo-500 h-full" style="width: ${porcPozo}%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[8px] font-bold text-slate-400 uppercase">
+                                        <span>Faltan: $${6000 - abonoPozo}</span>
+                                        <span>${Math.round(porcPozo)}%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${totalPlanB > 0 ? `
+                            <div class="px-6 pb-4">
+                                <div class="bg-blue-50 border-blue-100 border rounded-2xl p-4">
+                                    <h4 class="text-[9px] font-black uppercase text-blue-600 mb-2 tracking-widest"><i class="fas fa-truck-moving"></i> Plan B (Pipas)</h4>
+                                    <div class="flex justify-between text-xs font-black text-blue-800">
+                                        <span>Total Pagado:</span>
+                                        <span>$${totalPlanB}</span>
+                                    </div>
+                                </div>
+                            </div>` : ''}
+
                             <div class="mt-auto bg-slate-50 p-4 flex items-center gap-3 border-t border-slate-100">
                                 <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-xs">👤</div>
-                                <span class="text-[11px] font-bold text-slate-500 tracking-wide uppercase">Residente: ${vecino}</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Residente: ${vecino}</span>
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
+                        
+                        // Actualizar fecha de actualización si existe en la columna J (índice 9)
+                        if(col[9] && col[9] !== '-') document.getElementById('txt-actualizacion').textContent = col[9];
                     }
                 });
-        
+
                 // Actualizar contadores superiores
                 document.getElementById('gran-total-edificio').textContent = `$${sumaGeneralEdificio.toLocaleString()}`;
                 document.getElementById('total-pozo-recolectado').textContent = `$${sumaPozoEdificio.toLocaleString()}`;
-                
-                const porcentajePozo = Math.min((sumaPozoEdificio / 6000) * 100, 100);
-                document.getElementById('barra-pozo-global').style.width = `${porcentajePozo}%`;
-                document.getElementById('porcentaje-pozo-global').textContent = `${Math.round(porcentajePozo)}%`;
-        
-            } catch (error) {
-                console.error("Error al cargar los datos:", error);
-            }
+                const porcGlobal = Math.min((sumaPozoEdificio / 6000) * 100, 100);
+                document.getElementById('barra-pozo-global').style.width = `${porcGlobal}%`;
+                document.getElementById('porcentaje-pozo-global').textContent = `${Math.round(porcGlobal)}%`;
+
+            } catch (e) { console.error(e); }
         }
-        
-        // Ejecutar funciones al cargar
-        cargarDatos();
-        generarCalendarioAutomatico();
-        
-        function generarCalendarioAutomatico() {
-            const hoy = new Date();
-            // Normalizamos "hoy" para comparar solo fechas
-            const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-            
-            // CONFIGURACIÓN DEL COMITÉ
-            // Fecha semilla: Lunes 2 de Marzo de 2026 (Semana 49)
-            const fechaSemilla = new Date(2026, 2, 2); 
-            const SEMANA_BASE_COMITE = 49; 
-        
-            // Cálculo de la semana actual del comité
-            const msPorSemana = 1000 * 60 * 60 * 24 * 7;
-            const semanasTranscurridasDesdeSemilla = Math.floor((hoySoloFecha - fechaSemilla) / msPorSemana);
-            const semanaActualDelComite = SEMANA_BASE_COMITE + semanasTranscurridasDesdeSemilla;
-            
-            // Lógica de ciclos de 28 días (4 semanas) para el diseño visual
-            const inicioCicloActual = new Date(fechaSemilla);
-            inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasDesdeSemilla / 4) * 28));
-        
-            const contenedor = document.getElementById('seccion-calendario');
-            const nombresMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-            let htmlSemanas = "";
-        
-            for (let i = 0; i < 4; i++) {
-                let inicioSemana = new Date(inicioCicloActual);
-                inicioSemana.setDate(inicioCicloActual.getDate() + (i * 7));
-                
-                let finSemana = new Date(inicioSemana);
-                finSemana.setDate(inicioSemana.getDate() + 6);
-        
-                const esSemanaActual = (hoySoloFecha >= inicioSemana && hoySoloFecha <= finSemana);
-                
-                // Calculamos qué número de semana del comité le corresponde a este cuadro
-                const numSemanaCuadro = SEMANA_BASE_COMITE + Math.floor((inicioSemana - fechaSemilla) / msPorSemana);
-                
-                const estiloClase = esSemanaActual 
-                    ? "border-blue-500 bg-blue-50 text-blue-900 shadow-md scale-105 z-10" 
-                    : "border-slate-100 bg-slate-50 text-slate-400 opacity-60";
-                
-                const badgeActual = esSemanaActual ? `<span class="absolute -top-2 -right-2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded-lg font-black shadow-lg animate-pulse">ESTAMOS AQUÍ</span>` : "";
-        
-                const servicio = (i === 3) 
-                    ? '<i class="fas fa-house-user text-indigo-500"></i> CUOTA ORD.' 
-                    : '<i class="fas fa-truck-moving text-blue-500"></i> SERVICIO: PIPA';
-        
-                htmlSemanas += `
-                    <div class="relative p-3 rounded-2xl border-2 transition-all ${estiloClase}">
-                        ${badgeActual}
-                        <span class="block text-[10px] font-black uppercase mb-1 opacity-60">Semana ${numSemanaCuadro}</span>
-                        <p class="text-[11px] font-bold">
-                            ${inicioSemana.getDate()} ${nombresMeses[inicioSemana.getMonth()]} - 
-                            ${finSemana.getDate()} ${nombresMeses[finSemana.getMonth()]}
-                        </p>
-                        <div class="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter">
-                            ${servicio}
-                        </div>
-                    </div>
-                `;
-            }
-        
-            contenedor.innerHTML = `
-                <div class="p-4 bg-slate-900 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
-                    <h3 class="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2 text-center sm:text-left">
-                        <i class="fas fa-calendar-check text-blue-400"></i> 
-                        PLAN B: SEMANA ${semanaActualDelComite} DEL COMITÉ
-                    </h3>
-                    <span class="text-[10px] bg-blue-600 text-white px-3 py-1 rounded-full font-bold uppercase shadow-sm">
-                        Hoy: ${hoy.getDate()} ${nombresMeses[hoy.getMonth()]}
-                    </span>
-                </div>
-                <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 bg-white">
-                    ${htmlSemanas}
-                </div>
-            `;
+
+        function copiarTarjeta() {
+            const num = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
+            navigator.clipboard.writeText(num);
+            alert("Número copiado");
         }
+
+        window.onload = () => {
+            cargarDatos();
+            // Aquí puedes llamar a generarCalendarioAutomatico() si lo deseas
+        };
     </script>
 </body>
 </html>
-
-
