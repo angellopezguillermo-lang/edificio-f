@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T2FYW0HDYD"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-T2FYW0HDYD');
-    </script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Transparencia - Edificio F</title>
@@ -19,33 +11,28 @@
 <body class="bg-slate-100 text-slate-900 font-sans pb-10">
 
     <header class="bg-indigo-800 text-white shadow-xl sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto p-4 sm:p-6">
+        <div class="max-w-6xl mx-auto p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
-                <div class="text-center sm:text-left">
-                    <h1 class="text-2xl font-black tracking-tight">Edificio F</h1>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                        <div id="mes-actual" class="text-indigo-200 text-xs uppercase font-bold tracking-widest bg-indigo-900/40 px-2 py-0.5 rounded-md inline-block">
-                            MARZO
-                        </div>
-                        <div id="fecha-actualizacion" class="text-indigo-300 text-[10px] font-bold uppercase tracking-tight flex items-center justify-center sm:justify-start gap-1.5">
-                            <i class="fas fa-history opacity-70"></i> 
-                            <span id="txt-actualizacion">ACTUALIZANDO...</span>
-                        </div>
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight">Edificio F</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-indigo-200 text-xs uppercase font-bold tracking-widest bg-indigo-900/40 px-2 py-0.5 rounded-md">MARZO</span>
+                        <span id="txt-actualizacion" class="text-indigo-300 text-[10px] font-bold uppercase tracking-tight">ACTUALIZANDO...</span>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="bg-indigo-700/60 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl border border-indigo-400/40 shadow-inner text-center">
-                        <span class="block text-[9px] sm:text-[10px] uppercase text-indigo-300 font-bold tracking-widest mb-1">Fondo Recolectado</span>
-                        <span id="gran-total-edificio" class="text-xl sm:text-2xl font-black text-white">$0</span>
+                    <div class="bg-indigo-700/60 px-6 py-3 rounded-2xl border border-indigo-400/40 shadow-inner text-center">
+                        <span class="block text-[10px] uppercase text-indigo-300 font-bold tracking-widest mb-1">Fondo Recolectado</span>
+                        <span id="gran-total-edificio" class="text-2xl font-black text-white">$0</span>
                     </div>
-                    <div class="bg-emerald-700/60 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl border border-emerald-400/40 shadow-inner text-center min-w-[200px]">
-                        <span class="block text-[9px] sm:text-[10px] uppercase text-emerald-300 font-bold tracking-widest mb-1 text-center">Fondo Pozo Profundo</span>
+                    <div class="bg-emerald-700/60 px-6 py-3 rounded-2xl border border-emerald-400/40 shadow-inner text-center min-w-[220px]">
+                        <span class="block text-[10px] uppercase text-emerald-300 font-bold tracking-widest mb-1">Fondo Pozo Profundo</span>
                         <div class="flex items-center justify-center gap-3">
-                            <span id="total-pozo-recolectado" class="text-xl sm:text-2xl font-black text-white">$0</span>
-                            <span id="porcentaje-pozo-global" class="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black shadow-sm">0%</span>
+                            <span id="total-pozo-recolectado" class="text-2xl font-black text-white">$0</span>
+                            <span id="porcentaje-pozo-global" class="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black">0%</span>
                         </div>
-                        <div class="w-full bg-emerald-900/40 rounded-full h-1.5 mt-2 overflow-hidden border border-emerald-500/20">
-                            <div id="barra-pozo-global" class="bg-emerald-400 h-full transition-all duration-1000 shadow-[0_0_8px_rgba(52,211,153,0.5)]" style="width: 0%"></div>
+                        <div class="w-full bg-emerald-900/40 rounded-full h-1.5 mt-2 overflow-hidden">
+                            <div id="barra-pozo-global" class="bg-emerald-400 h-full transition-all duration-1000" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
@@ -53,40 +40,145 @@
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto p-4 space-y-8">
+    <main class="max-w-6xl mx-auto p-4 space-y-8 mt-6">
 
-        <section id="seccion-calendario" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"></section>
-
-        <section class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-blue-500 border border-slate-200">
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-1">Cuota de Mantenimiento</span>
-                    <p class="text-sm font-bold text-slate-700">$170.00 Mensuales</p>
+        <section class="bg-indigo-900 text-white rounded-[32px] p-6 shadow-lg border border-indigo-700">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="fas fa-calendar-alt"></i> Plan B: Semana 52 del Comité
+                </h2>
+                <span class="bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black uppercase">Hoy: 29 Mar</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-indigo-800/40 p-4 rounded-2xl border border-indigo-500/20 opacity-60">
+                    <p class="text-[8px] font-black text-indigo-300 uppercase">Semana 49</p>
+                    <p class="text-[10px] font-bold">2 Mar - 8 Mar</p>
+                    <span class="text-[9px] mt-2 block font-black uppercase"><i class="fas fa-truck-moving"></i> Servicio: Pipa</span>
                 </div>
+                <div class="bg-indigo-800/40 p-4 rounded-2xl border border-indigo-500/20 opacity-60">
+                    <p class="text-[8px] font-black text-indigo-300 uppercase">Semana 50</p>
+                    <p class="text-[10px] font-bold">9 Mar - 15 Mar</p>
+                    <span class="text-[9px] mt-2 block font-black uppercase"><i class="fas fa-truck-moving"></i> Servicio: Pipa</span>
                 </div>
-
-            <div class="bg-white border-2 border-indigo-100 rounded-2xl p-6 shadow-sm">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest leading-none">Datos para Depósito</h4>
-                            <p class="text-lg font-black text-slate-800 mt-1">Virna Díaz Velásquez</p>
-                        </div>
-                    </div>
-                    <div class="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200 flex justify-between items-center gap-4">
-                        <span id="num-tarjeta" class="text-sm font-mono font-bold text-indigo-800 tracking-wider">5579 1001 3565 7797</span>
-                        <button onclick="copiarTarjeta()" id="btn-copiar" class="bg-white text-indigo-600 p-2 rounded-lg border border-indigo-200">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
+                <div class="bg-indigo-800/40 p-4 rounded-2xl border border-indigo-500/20 opacity-60">
+                    <p class="text-[8px] font-black text-indigo-300 uppercase">Semana 51</p>
+                    <p class="text-[10px] font-bold">16 Mar - 22 Mar</p>
+                    <span class="text-[9px] mt-2 block font-black uppercase"><i class="fas fa-truck-moving"></i> Servicio: Pipa</span>
+                </div>
+                <div class="bg-white text-indigo-900 p-4 rounded-2xl border-2 border-blue-400 relative">
+                    <span class="absolute -top-2 right-2 bg-blue-500 text-white text-[8px] px-2 py-0.5 rounded-full font-black uppercase italic">Estamos aquí</span>
+                    <p class="text-[8px] font-black text-indigo-400 uppercase">Semana 52</p>
+                    <p class="text-[10px] font-black">23 Mar - 29 Mar</p>
+                    <span class="text-[9px] mt-2 block font-black uppercase"><i class="fas fa-faucet"></i> Cuota Ord.</span>
                 </div>
             </div>
         </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="contenedor-unidades"></div>
+        <section class="space-y-6">
+            <h2 class="text-xs font-black text-indigo-800 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
+                <i class="fas fa-shield-alt text-blue-500"></i> Reglas y Acuerdos Vigentes
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-[28px] shadow-sm border border-slate-200 border-l-4 border-l-blue-500">
+                    <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest block mb-2">Cuota de Mantenimiento</span>
+                    <p class="text-sm font-black text-slate-800">$170.00 Mensuales</p>
+                    <p class="text-[10px] text-slate-400 mt-2 font-medium">Límite: día 10. A partir del día 11 se suspende el servicio ($150 reconexión).</p>
+                </div>
+                <div class="bg-white p-6 rounded-[28px] shadow-sm border border-slate-200 border-l-4 border-l-orange-500">
+                    <span class="text-[9px] font-black text-orange-600 uppercase tracking-widest block mb-2">Multa de Convivencia</span>
+                    <p class="text-sm font-black text-slate-800">$250.00 por Falta</p>
+                    <p class="text-[10px] text-slate-400 mt-2 font-medium">Ruido excesivo (>10PM), obstruir escaleras o dejar basura en áreas comunes.</p>
+                </div>
+                <div class="bg-white p-6 rounded-[28px] shadow-sm border border-slate-200 border-l-4 border-l-red-500">
+                    <span class="text-[9px] font-black text-red-600 uppercase tracking-widest block mb-2">Asambleas Anuales</span>
+                    <p class="text-sm font-black text-slate-800">$500.00 Inasistencia</p>
+                    <p class="text-[10px] text-slate-400 mt-2 font-medium">Aplica para reuniones de cambio de comité e incluye corte de agua automático.</p>
+                </div>
+            </div>
+
+            <div class="bg-white border-2 border-indigo-100 rounded-[32px] p-8 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8 opacity-5 text-8xl"><i class="fas fa-university"></i></div>
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-3xl flex items-center justify-center text-2xl">
+                            <i class="fas fa-landmark"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest mb-1">Datos para Depósito / Transferencia</h4>
+                            <p class="text-2xl font-black text-slate-800 leading-none">Virna Díaz Velásquez</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-4 items-center w-full md:w-auto">
+                        <div class="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100 text-center w-full md:w-auto">
+                            <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Banco</p>
+                            <p class="text-xs font-black text-slate-700 uppercase">Santander</p>
+                        </div>
+                        <div class="bg-indigo-50 px-6 py-3 rounded-2xl border border-indigo-100 flex items-center gap-6 w-full md:w-auto">
+                            <div>
+                                <p class="text-[8px] font-black text-indigo-400 uppercase mb-1">Número de Tarjeta</p>
+                                <span id="num-tarjeta" class="text-lg font-mono font-black text-indigo-800 tracking-wider">5579 1001 3565 7797</span>
+                            </div>
+                            <button onclick="copiarTarjeta()" class="bg-white text-indigo-600 p-3 rounded-xl shadow-sm hover:scale-105 transition-transform border border-indigo-100">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-400 font-bold text-center mt-6 italic">Por favor, envía tu comprobante vía WhatsApp una vez realizado el pago.</p>
+            </div>
+        </section>
+
+        <section class="bg-indigo-900 rounded-[32px] p-8 text-white shadow-lg">
+            <h2 class="text-xs font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                <i class="fas fa-bullhorn text-indigo-400"></i> Recordatorios de Seguridad y Convivencia
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div class="flex gap-4">
+                    <i class="fas fa-door-closed text-indigo-400 mt-1"></i>
+                    <p class="text-[11px] leading-relaxed"><strong class="text-indigo-200">Seguridad:</strong> Es obligatorio mantener las puertas de acceso cerradas. Dejarlas abiertas compromete la seguridad de todos.</p>
+                </div>
+                <div class="flex gap-4">
+                    <i class="fas fa-car text-indigo-400 mt-1"></i>
+                    <p class="text-[11px] leading-relaxed"><strong class="text-indigo-200">Estacionamiento:</strong> Favor de respetar los cajones asignados. Obstruir el paso genera sanción inmediata de $250.</p>
+                </div>
+                <div class="flex gap-4">
+                    <i class="fas fa-paw text-indigo-400 mt-1"></i>
+                    <p class="text-[11px] leading-relaxed"><strong class="text-indigo-200">Mascotas:</strong> Deben estar registradas en el censo. Cualquier daño o suciedad en áreas comunes es responsabilidad del dueño.</p>
+                </div>
+                <div class="flex gap-4">
+                    <i class="fas fa-user-plus text-indigo-400 mt-1"></i>
+                    <p class="text-[11px] leading-relaxed"><strong class="text-indigo-200">Nuevos Inquilinos:</strong> Depósito de $3,000, copia de INE y firma de reglamento son requisitos para mudanza.</p>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="text-xs font-black text-indigo-800 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
+            <i class="fas fa-users text-blue-500"></i> Estado de Cuenta por Departamento
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="contenedor-unidades"></div>
+
+        <section class="space-y-6">
+            <h2 class="text-xs font-black text-indigo-800 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
+                <i class="fas fa-folder-open text-orange-500"></i> Biblioteca de Documentos
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-6 rounded-[28px] border border-slate-200 flex items-center justify-between hover:border-indigo-300 transition-colors cursor-pointer group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-xl">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-[11px] font-black text-slate-800 uppercase leading-none mb-1">Acta de Asamblea</h4>
+                            <p class="text-[9px] text-slate-400 font-bold">Reunión Feb 8, 2026</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-[28px] border border-dashed border-slate-300 flex items-center justify-center">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Próximos documentos aquí</span>
+                </div>
+            </div>
+        </section>
 
     </main>
 
@@ -115,67 +207,64 @@
                         const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
                         const fechaRio = col[6] || "N/A";
                         
-                        // Plan B y Multas
                         const s1 = parseFloat(col[10]) || 0;
                         const s2 = parseFloat(col[11]) || 0;
                         const s3 = parseFloat(col[12]) || 0;
                         const totalPlanB = s1 + s2 + s3;
+
                         const multaMonto = parseFloat(col[13]) || 0;
+                        const multaNota = col[14] || "";
                         const multaEstatus = col[15]?.trim().toLowerCase() === 'pagado';
                         
-                        // Pozo
                         const abonoPozo = parseFloat(col[16]) || 0;
-                        const metaPozoIndividual = 6000;
-                        const porcPozo = Math.min((abonoPozo / metaPozoIndividual) * 100, 100);
+                        const porcPozo = Math.min((abonoPozo / 6000) * 100, 100);
 
-                        // Cálculo Total Abonado
                         let totalAbonadoVecino = (aguaPagado ? 170 : 0) + totalPlanB + (multaEstatus ? multaMonto : 0) + abonoPozo;
                         
                         sumaGeneralEdificio += (aguaPagado ? 170 : 0) + totalPlanB + (multaEstatus ? multaMonto : 0);
                         sumaPozoEdificio += abonoPozo;
 
-                        // Construcción de la Tarjeta (DISEÑO ORIGINAL)
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden flex flex-col transition-all hover:shadow-md";
                         tarjeta.innerHTML = `
-                            <div class="p-6 flex justify-between items-start">
+                            <div class="p-8 flex justify-between items-start">
                                 <div>
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Departamento</p>
-                                    <h3 class="text-5xl font-black text-slate-800 tracking-tighter">${depto}</h3>
+                                    <h3 class="text-6xl font-black text-slate-800 tracking-tighter">${depto}</h3>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Abonado Total</p>
-                                    <div class="text-4xl font-black text-indigo-600 tracking-tighter">$${totalAbonadoVecino}</div>
+                                    <div class="text-5xl font-black text-indigo-600 tracking-tighter">$${totalAbonadoVecino}</div>
                                 </div>
                             </div>
 
-                            <div class="px-6 grid grid-cols-2 gap-3 mb-4">
-                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                                    <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Agua ($170)</p>
-                                    <span class="text-[10px] font-black ${aguaPagado ? 'text-green-600' : 'text-red-600'} flex items-center justify-center gap-1">
-                                        <i class="fas fa-check-circle"></i> ${aguaPagado ? 'PAGADO' : 'PENDIENTE'}
+                            <div class="px-8 grid grid-cols-2 gap-4 mb-6">
+                                <div class="p-6 rounded-[32px] bg-slate-50 border border-slate-100 text-center">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Agua ($170)</p>
+                                    <span class="text-xs font-black ${aguaPagado ? 'text-green-600' : 'text-red-600'} flex items-center justify-center gap-1.5">
+                                        <i class="fas ${aguaPagado ? 'fa-check-circle' : 'fa-clock'}"></i> ${aguaPagado ? 'PAGADO' : 'PENDIENTE'}
                                     </span>
-                                    <p class="text-[8px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaAgua}</p>
+                                    <p class="text-[8px] text-slate-400 font-bold mt-2 uppercase">Fecha: ${fechaAgua}</p>
                                 </div>
-                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                                    <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Río ($0)</p>
-                                    <span class="text-[10px] font-black ${rioPagado ? 'text-green-600' : 'text-red-600'} flex items-center justify-center gap-1">
+                                <div class="p-6 rounded-[32px] bg-slate-50 border border-slate-100 text-center">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Río ($0)</p>
+                                    <span class="text-xs font-black ${rioPagado ? 'text-green-600' : 'text-red-600'} flex items-center justify-center gap-1.5">
                                         <i class="fas fa-check-circle"></i> ${rioPagado ? 'PAGADO' : 'PENDIENTE'}
                                     </span>
-                                    <p class="text-[8px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaRio}</p>
+                                    <p class="text-[8px] text-slate-400 font-bold mt-2 uppercase">Fecha: ${fechaRio}</p>
                                 </div>
                             </div>
 
-                            <div class="px-6 pb-4">
-                                <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <h4 class="text-[9px] font-black uppercase text-indigo-600 tracking-widest">Cooperación Pozo Profundo</h4>
+                            <div class="px-8 pb-6">
+                                <div class="bg-indigo-50/50 border border-indigo-100 rounded-3xl p-5">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h4 class="text-[10px] font-black uppercase text-indigo-600 tracking-widest">Cooperación Pozo Profundo</h4>
                                         <span class="text-sm font-black text-indigo-700">$${abonoPozo}</span>
                                     </div>
-                                    <div class="w-full bg-slate-200 rounded-full h-1.5 mb-2 overflow-hidden">
+                                    <div class="w-full bg-slate-200 rounded-full h-2 mb-2 overflow-hidden">
                                         <div class="bg-indigo-500 h-full" style="width: ${porcPozo}%"></div>
                                     </div>
-                                    <div class="flex justify-between text-[8px] font-bold text-slate-400 uppercase">
+                                    <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase">
                                         <span>Faltan: $${6000 - abonoPozo}</span>
                                         <span>${Math.round(porcPozo)}%</span>
                                     </div>
@@ -183,32 +272,41 @@
                             </div>
 
                             ${totalPlanB > 0 ? `
-                            <div class="px-6 pb-4">
-                                <div class="bg-blue-50 border-blue-100 border rounded-2xl p-4">
-                                    <h4 class="text-[9px] font-black uppercase text-blue-600 mb-2 tracking-widest"><i class="fas fa-truck-moving"></i> Plan B (Pipas)</h4>
-                                    <div class="flex justify-between text-xs font-black text-blue-800">
-                                        <span>Total Pagado:</span>
-                                        <span>$${totalPlanB}</span>
+                            <div class="px-8 pb-6">
+                                <div class="bg-blue-50 border-blue-100 border rounded-3xl p-5">
+                                    <div class="flex justify-between items-center text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                                        <span><i class="fas fa-truck-moving mr-2"></i> Plan B (Pipas)</span>
+                                        <span class="text-sm text-blue-700">$${totalPlanB}</span>
                                     </div>
                                 </div>
                             </div>` : ''}
 
-                            <div class="mt-auto bg-slate-50 p-4 flex items-center gap-3 border-t border-slate-100">
-                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-xs">👤</div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase">Residente: ${vecino}</span>
+                            ${multaMonto > 0 ? `
+                            <div class="px-8 pb-6">
+                                <div class="bg-emerald-50 border-emerald-100 border rounded-3xl p-5">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <h4 class="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Cargo Adicional</h4>
+                                        <span class="text-sm font-black text-emerald-700">+$${multaMonto}</span>
+                                    </div>
+                                    <p class="text-[9px] font-bold text-emerald-600/70 uppercase">${multaNota}</p>
+                                    <span class="mt-2 inline-block bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full font-black uppercase">Liquidado</span>
+                                </div>
+                            </div>` : ''}
+
+                            <div class="mt-auto bg-slate-50 p-6 flex items-center gap-4 border-t border-slate-100">
+                                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-xs border border-slate-100">👤</div>
+                                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Residente: ${vecino}</span>
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
                         
-                        // Actualizar fecha de actualización si existe en la columna J (índice 9)
-                        if(col[9] && col[9] !== '-') document.getElementById('txt-actualizacion').textContent = col[9];
+                        if(col[9] && col[9] !== '-') document.getElementById('txt-actualizacion').textContent = "INFORMACIÓN ACTUALIZADA AL: " + col[9];
                     }
                 });
 
-                // Actualizar contadores superiores
                 document.getElementById('gran-total-edificio').textContent = `$${sumaGeneralEdificio.toLocaleString()}`;
                 document.getElementById('total-pozo-recolectado').textContent = `$${sumaPozoEdificio.toLocaleString()}`;
-                const porcGlobal = Math.min((sumaPozoEdificio / 6000) * 100, 100);
+                const porcGlobal = Math.min((sumaPozoEdificio / 50000) * 100, 100); // Ajustado a meta global estimada
                 document.getElementById('barra-pozo-global').style.width = `${porcGlobal}%`;
                 document.getElementById('porcentaje-pozo-global').textContent = `${Math.round(porcGlobal)}%`;
 
@@ -217,14 +315,12 @@
 
         function copiarTarjeta() {
             const num = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
-            navigator.clipboard.writeText(num);
-            alert("Número copiado");
+            navigator.clipboard.writeText(num).then(() => {
+                alert("Número de tarjeta copiado al portapapeles");
+            });
         }
 
-        window.onload = () => {
-            cargarDatos();
-            // Aquí puedes llamar a generarCalendarioAutomatico() si lo deseas
-        };
+        window.onload = cargarDatos;
     </script>
 </body>
 </html>
