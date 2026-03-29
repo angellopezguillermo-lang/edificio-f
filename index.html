@@ -200,194 +200,164 @@
         }
     
         async function cargarDatos() {
-            // 1. CARGAR AVISOS
-            Papa.parse(URL_AVISOS, {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(results) {
-                    const contenedor = document.getElementById('contenedor-avisos');
-                    contenedor.innerHTML = "";
-                    results.data.forEach(row => {
-                        const div = document.createElement('div');
-                        div.className = "border-b border-slate-50 pb-4 last:border-0";
-                        div.innerHTML = `
-                            <div class="text-xs font-bold text-indigo-400 uppercase mb-1">${row.Fecha || ''}</div>
-                            <div class="text-lg font-bold text-slate-800 mb-1">${row.Título || ''}</div>
-                            <div class="text-base text-slate-600 leading-relaxed whitespace-pre-line">${row.Descripción || ''}</div>
-                        `;
-                        contenedor.appendChild(div);
-                    });
-                }
-            });
-    
-            // 2. CARGAR CUOTAS Y UNIDADES
-            Papa.parse(URL_CUOTAS, {
-                download: true, header: false, skipEmptyLines: true,
-                complete: function(results) {
-                    const datos = results.data.slice(1);
-                    const contenedor = document.getElementById('contenedor-unidades');
-                    contenedor.innerHTML = "";
-                    
-                    let sumaGeneralEdificio = 0; 
-                    let sumaPozoTotal = 0;      
-    
-                    if(datos[0]) {
-                        document.getElementById('mes-actual').innerText = datos[0][7] || "MES ACTUAL";
-                        document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas.";
-                        const fechaTexto = datos[0][9] || "-";
-                        document.getElementById('fecha-actualizacion').innerHTML = `
-                            <i class="fas fa-check-circle text-emerald-400"></i> 
-                            INFORMACIÓN ACTUALIZADA AL: ${fechaTexto}
-                        `;
-                    }
-    
-                    const formatoMoneda = (valor) => valor.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 });
-
-                    datos.forEach(col => {
-                        if (!col[0]) return; // Saltar filas vacías
-                    
-                        const cuotaAguaMonto = 170; 
-                        const cuotaRioMonto = parseFloat(col[4]) || 0;
-                        const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
-                        const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
+            try {
+                const respuesta = await fetch(urlCSV);
+                const texto = await respuesta.text();
+                const filas = texto.split('\n').slice(1);
+                const datos = filas.map(fila => fila.split(','));
+        
+                const contenedor = document.getElementById('contenedor-vecinos');
+                contenedor.innerHTML = '';
+        
+                let sumaGeneralEdificio = 0;
+                let sumaPozoEdificio = 0;
+        
+                datos.forEach(col => {
+                    if (col[0]) {
+                        // 1. Datos Básicos
+                        const depto = col[0].trim();
+                        const vecino = col[1] || "Residente";
                         
+                        // 2. Cuota Ordinaria (Agua - Columnas C y D)
+                        const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
+                        const fechaAgua = col[3] || "N/A";
+                        const cuotaAguaMonto = 170;
+        
+                        // 3. Cuota Río (Columnas E, F, G)
+                        const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
+                        const fechaRio = col[6] || "N/A";
+        
+                        // 4. PLAN B - SEMANAS (Columnas K, L, M -> Índices 10, 11, 12)
                         const s1 = parseFloat(col[10]) || 0;
                         const s2 = parseFloat(col[11]) || 0;
                         const s3 = parseFloat(col[12]) || 0;
+                        const totalPlanB = s1 + s2 + s3;
+        
+                        // 5. MULTAS (Columnas N, O, P -> Índices 13, 14, 15)
                         const multaMonto = parseFloat(col[13]) || 0;
-                        const multaMotivo = col[14] || "Sanción"; 
-                        const multaPagada = col[15]?.trim().toLowerCase() === 'pagado';
-                    
-                        const metaPozo = 6000;
-                        const pozoAbonado = parseFloat(col[16]) || 0;
-                        const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
-                    
-                        // CÁLCULO TOTAL POR VECINO (Sumamos solo lo que ya pagó)
-                        let totalVecinoOperativo = 0;
-                        if (aguaPagado) totalVecinoOperativo += cuotaAguaMonto;
-                        if (rioPagado) totalVecinoOperativo += cuotaRioMonto;
-                        if (multaPagada) totalVecinoOperativo += multaMonto;
-                        totalVecinoOperativo += (s1 + s2 + s3);
-                    
-                        sumaGeneralEdificio += totalVecinoOperativo;
-                        sumaPozoTotal += pozoAbonado;
-    
-                        const tarjeta = document.createElement('div');
-                        tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
+                        const multaMotivo = col[14] || "Sanción";
+                        const multaEstatus = col[15]?.trim().toLowerCase() === 'pagado';
+        
+                        // 6. POZO Y SALDO FAVOR (Columnas Q y R -> Índices 16, 17)
+                        const abonoPozo = parseFloat(col[16]) || 0;
+                        const saldoFavor = parseFloat(col[17]) || 0;
+        
+                        // --- CÁLCULO DE TOTALES POR VECINO ---
+                        let totalAbonadoVecino = 0;
+                        if (aguaPagado) totalAbonadoVecino += cuotaAguaMonto;
+                        totalAbonadoVecino += totalPlanB; // Suma directa de lo pagado en semanas
+                        if (multaEstatus) totalAbonadoVecino += multaMonto;
+                        totalAbonadoVecino += abonoPozo;
+        
+                        // Acumuladores Generales (Superiores)
+                        sumaGeneralEdificio += (aguaPagado ? cuotaAguaMonto : 0) + totalPlanB + (multaEstatus ? multaMonto : 0);
+                        sumaPozoEdificio += abonoPozo;
+        
+                        // --- CONSTRUCCIÓN DE COMPONENTES HTML (Respetando tu diseño) ---
                         
-                        let desglosePlanB = "";
-                        if(s1 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
-                        if(s2 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
-                        if(s3 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
-    
-                        let htmlPlanB = (s1 + s2 + s3 > 0) ? `
+                        // Bloque Plan B (Solo si hay pagos o saldo)
+                        let htmlPlanB = '';
+                        if (totalPlanB > 0) {
+                            htmlPlanB = `
                             <div class="px-6 pb-4">
-                                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-blue-900">
-                                    <p class="text-[10px] font-black uppercase mb-2 flex items-center gap-2 opacity-60 tracking-widest">
-                                        <i class="fas fa-faucet text-blue-500"></i> Plan B (Pipas)
-                                    </p>
-                                    <div class="text-sm space-y-2 font-bold">${desglosePlanB}</div>
-                                </div>
-                            </div>` : '';
-    
-                        let htmlMulta = multaMonto > 0 ? `
-                            <div class="px-6 pb-4">
-                                <div class="${multaPagada ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border-2 rounded-2xl p-4 flex justify-between items-center">
-                                    <div>
-                                        <p class="text-[10px] font-black uppercase ${multaPagada ? 'text-green-600' : 'text-orange-600'} tracking-widest">Cargo Adicional</p>
-                                        <p class="text-sm font-bold text-slate-700 leading-tight mb-1">${multaMotivo}</p>
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black ${multaPagada ? 'bg-green-200 text-green-700' : 'bg-orange-200 text-orange-700'} uppercase">
-                                            ${multaPagada ? 'Liquidado' : 'Pendiente'}
-                                        </span>
+                                <div class="bg-blue-50 border-blue-100 border rounded-2xl p-4">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="text-blue-600">📦</span>
+                                        <h4 class="text-[10px] font-black uppercase text-blue-600 tracking-widest">Plan B (Pipas)</h4>
                                     </div>
-                                    <div class="${multaPagada ? 'text-green-600' : 'text-orange-600'} font-black text-2xl">+$${multaMonto}</div>
-                                </div>
-                            </div>` : '';
-    
-                        let htmlPozo = `
-                            <div class="px-6 pb-4">
-                                <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
-                                    <div class="flex justify-between items-end mb-2">
-                                        <div>
-                                            <p class="text-[10px] font-black uppercase text-indigo-600 tracking-widest">Cooperación Pozo Profundo</p>
-                                            <p class="text-xs font-bold text-slate-500 italic">Meta: $${metaPozo}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="text-xl font-black text-indigo-800">$${pozoAbonado}</span>
-                                        </div>
-                                    </div>
-                                    <div class="w-full bg-indigo-200/50 rounded-full h-2.5 overflow-hidden">
-                                        <div class="bg-indigo-600 h-full transition-all duration-1000" style="width: ${porcentajePozo}%"></div>
-                                    </div>
-                                    <div class="flex justify-between mt-2">
-                                        <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-tighter">
-                                            ${porcentajePozo >= 100 ? '¡META ALCANZADA! 🎉' : `Faltan: $${metaPozo - pozoAbonado}`}
-                                        </span>
-                                        <span class="text-[9px] text-indigo-400 font-black">${Math.round(porcentajePozo)}%</span>
-                                    </div>
+                                    ${s1 > 0 ? `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-600 font-bold">Semana 1 (Pipa)</span><span class="text-xs font-black text-blue-700">$${s1}</span></div>` : ''}
+                                    ${s2 > 0 ? `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-600 font-bold">Semana 2 (Pipa)</span><span class="text-xs font-black text-blue-700">$${s2}</span></div>` : ''}
+                                    ${s3 > 0 ? `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-600 font-bold">Semana 3 (Pipa)</span><span class="text-xs font-black text-blue-700">$${s3}</span></div>` : ''}
                                 </div>
                             </div>`;
-    
-                        tarjeta.innerHTML = `
-                            <div class="p-6 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
+                        }
+        
+                        // Bloque Saldo a Favor (Nuevo)
+                        let htmlSaldoFavor = saldoFavor > 0 ? `
+                        <div class="px-6 pb-4">
+                            <div class="bg-emerald-50 border-emerald-200 border-2 rounded-2xl p-4 flex justify-between items-center text-emerald-700">
                                 <div>
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Departamento</span>
-                                    <div class="text-3xl font-black text-indigo-950 leading-none">${col[0]}</div>
+                                    <p class="text-[10px] font-black uppercase tracking-widest">Saldo a Favor Plan B</p>
+                                    <p class="text-[10px] font-bold italic opacity-80">Disponible para el ciclo</p>
+                                </div>
+                                <div class="font-black text-xl">+$${saldoFavor}</div>
+                            </div>
+                        </div>` : '';
+        
+                        // Bloque Multa
+                        let htmlMulta = multaMonto > 0 ? `
+                        <div class="px-6 pb-4">
+                            <div class="${multaEstatus ? 'bg-slate-50' : 'bg-red-50'} border-2 rounded-2xl p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase ${multaEstatus ? 'text-slate-500' : 'text-red-600'}">${multaMotivo}</p>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${multaEstatus ? 'bg-green-100 text-green-700' : 'bg-red-200 text-red-800'}">
+                                            ${multaEstatus ? 'LIQUIDADO' : 'PENDIENTE'}
+                                        </span>
+                                    </div>
+                                    <div class="text-xl font-black ${multaEstatus ? 'text-slate-400' : 'text-red-600'}">$${multaMonto}</div>
+                                </div>
+                            </div>
+                        </div>` : '';
+        
+                        // Crear Tarjeta Completa
+                        const tarjeta = document.createElement('div');
+                        tarjeta.className = "bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden flex flex-col transition-all hover:shadow-md";
+                        tarjeta.innerHTML = `
+                            <div class="p-6 flex justify-between items-start">
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Departamento</p>
+                                    <h3 class="text-5xl font-black text-slate-800 tracking-tighter">${depto}</h3>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Abonado Total</span>
-                                    <div class="text-3xl font-black text-indigo-600 leading-none">$${totalVecinoOperativo}</div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 text-right">Abonado Total</p>
+                                    <div class="text-4xl font-black text-indigo-600 tracking-tighter">$${totalAbonadoVecino}</div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-50 mb-4 text-center">
-                                <div class="p-5">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Agua ($${cuotaAguaMonto})</div>
-                                    <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-black text-base mb-1">
-                                        ${aguaPagado ? '<i class="fas fa-check-circle"></i> PAGADO' : '<i class="fas fa-clock"></i> PENDIENTE'}
+        
+                            <div class="px-6 grid grid-cols-2 gap-3 mb-4">
+                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Agua ($170)</p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="${aguaPagado ? 'text-green-500' : 'text-red-500'} text-lg">●</span>
+                                        <span class="text-xs font-black text-slate-700">${aguaPagado ? 'PAGADO' : 'PENDIENTE'}</span>
                                     </div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${aguaPagado ? 'Fecha: ' + col[3] : 'Esperando pago'}</div>
+                                    <p class="text-[9px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaAgua}</p>
                                 </div>
-                                <div class="p-5">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Río ($${cuotaRioMonto})</div>
-                                    <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-black text-base mb-1">
-                                        ${rioPagado ? '<i class="fas fa-check-circle"></i> PAGADO' : '<i class="fas fa-clock"></i> PENDIENTE'}
+                                <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Río ($0)</p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="${rioPagado ? 'text-green-500' : 'text-red-500'} text-lg">●</span>
+                                        <span class="text-xs font-black text-slate-700">${rioPagado ? 'PAGADO' : 'PENDIENTE'}</span>
                                     </div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${rioPagado ? 'Fecha: ' + col[6] : 'Esperando pago'}</div>
+                                    <p class="text-[9px] text-slate-400 font-bold mt-1 uppercase">Fecha: ${fechaRio}</p>
                                 </div>
                             </div>
-                            ${htmlPozo}
+        
                             ${htmlPlanB}
+                            ${htmlSaldoFavor}
                             ${htmlMulta}
-                            <div class="px-6 py-3 bg-slate-50/80 text-xs text-slate-500 flex justify-between font-medium">
-                                <span><i class="fas fa-user-circle mr-1"></i> Residente: ${col[1] || '---'}</span>
+        
+                            <div class="mt-auto bg-slate-50 p-4 flex items-center gap-3 border-t border-slate-100">
+                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-xs">👤</div>
+                                <span class="text-[11px] font-bold text-slate-500 tracking-wide uppercase">Residente: ${vecino}</span>
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
-                    });
-    
-                    // --- ACTUALIZACIÓN DE TOTALES EN EL HEADER ---
-                    const META_GLOBAL_POZO = 48000; 
-                    const porcentajeGlobal = Math.min((sumaPozoTotal / META_GLOBAL_POZO) * 100, 100);
-                    
-                    // Actualizamos los textos con formato de moneda
-                    document.getElementById('gran-total-edificio').innerText = `$${sumaGeneralEdificio.toLocaleString('es-MX', {minimumFractionDigits: 0})}`;
-                    document.getElementById('total-pozo-recolectado').innerText = `$${sumaPozoTotal.toLocaleString('es-MX', {minimumFractionDigits: 0})}`;
-                    
-                    // Actualizamos la gráfica de progreso global
-                    const barraGlobal = document.getElementById('barra-pozo-global');
-                    const porcentajeTexto = document.getElementById('porcentaje-pozo-global');
-                    
-                    porcentajeTexto.innerText = `${Math.round(porcentajeGlobal)}%`;
-                    barraGlobal.style.width = `${porcentajeGlobal}%`;
-                    
-                    // Feedback visual de meta cumplida
-                    if(porcentajeGlobal >= 100) {
-                        barraGlobal.classList.remove('bg-emerald-400');
-                        barraGlobal.classList.add('bg-yellow-400', 'shadow-[0_0_12px_rgba(250,204,21,0.6)]');
-                        porcentajeTexto.classList.replace('bg-emerald-500', 'bg-yellow-500');
-                        porcentajeTexto.innerHTML = '¡META LOGRADA! 🎉';
                     }
-                }
-            });
+                });
+        
+                // Actualizar contadores superiores
+                document.getElementById('total-recolectado').textContent = `$${sumaGeneralEdificio.toLocaleString()}`;
+                document.getElementById('total-pozo').textContent = `$${sumaPozoEdificio.toLocaleString()}`;
+                
+                const porcentajePozo = Math.min((sumaPozoEdificio / 6000) * 100, 100);
+                document.getElementById('barra-pozo').style.width = `${porcentajePozo}%`;
+                document.getElementById('porcentaje-pozo-texto').textContent = `${Math.round(porcentajePozo)}%`;
+        
+            } catch (error) {
+                console.error("Error al cargar los datos:", error);
+            }
         }
         
         // Ejecutar funciones al cargar
