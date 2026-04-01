@@ -275,9 +275,9 @@
                         tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
                         
                         let desglosePlanB = "";
-                        if(s1 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
-                        if(s2 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
-                        if(s3 > 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
+                        if(s1 >= 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
+                        if(s2 >= 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
+                        if(s3 >= 0) desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
     
                         let htmlPlanB = (s1 + s2 + s3 > 0) ? `
                             <div class="px-6 pb-4">
