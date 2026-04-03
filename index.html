@@ -249,10 +249,16 @@
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
                         const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
-                        
-                        const s1 = parseFloat(col[10]) || 0;
-                        const s2 = parseFloat(col[11]) || 0;
-                        const s3 = parseFloat(col[12]) || 0;
+                    
+                        // --- PASO 1: CAPTURA LOS VALORES ORIGINALES (Para lógica visual) ---
+                        const rawS1 = col[10];
+                        const rawS2 = col[11];
+                        const rawS3 = col[12];
+                    
+                        // --- PASO 2: CONVERSIÓN A NÚMERO (Para cálculos matemáticos) ---
+                        const s1 = parseFloat(rawS1) || 0;
+                        const s2 = parseFloat(rawS2) || 0;
+                        const s3 = parseFloat(rawS3) || 0;
                         const multaMonto = parseFloat(col[13]) || 0;
                         const multaMotivo = col[14] || "Sanción"; 
                         const multaPagada = col[15]?.trim().toLowerCase() === 'pagado';
@@ -261,7 +267,7 @@
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
                     
-                        // CÁLCULO TOTAL POR VECINO (Sumamos solo lo que ya pagó)
+                        // CÁLCULO TOTAL POR VECINO (Se mantiene igual, sumando los ceros si existen)
                         let totalVecinoOperativo = 0;
                         if (aguaPagado) totalVecinoOperativo += cuotaAguaMonto;
                         if (rioPagado) totalVecinoOperativo += cuotaRioMonto;
@@ -270,31 +276,29 @@
                     
                         sumaGeneralEdificio += totalVecinoOperativo;
                         sumaPozoTotal += pozoAbonado;
-    
+                    
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
                         
+                        // --- PASO 3: CONSTRUCCIÓN DEL DESGLOSE VISUAL ---
                         let desglosePlanB = "";
-
-                        // Función auxiliar para validar que el dato sea un número real y no una celda vacía
-                        // Verificamos que no sea string vacío (""), que no sea null y que sea mayor o igual a 0
-                        if (s1 !== "" && s1 !== null && s1 >= 0) {
+                    
+                        // Solo verificamos si la celda original NO está vacía. 
+                        // Si tiene un "0", pasará la prueba y se mostrará.
+                        if (rawS1 !== "" && rawS1 !== null && typeof rawS1 !== 'undefined') {
                             desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
                         }
                         
-                        if (s2 !== "" && s2 !== null && s2 >= 0) {
+                        if (rawS2 !== "" && rawS2 !== null && typeof rawS2 !== 'undefined') {
                             desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
                         }
                         
-                        if (s3 !== "" && s3 !== null && s3 >= 0) {
+                        if (rawS3 !== "" && rawS3 !== null && typeof rawS3 !== 'undefined') {
                             desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
                         }
-                        
-                        // Para la suma total, usamos Number() para asegurar que sume valores numéricos
-                        // y evitamos que celdas vacías activen el recuadro innecesariamente.
-                        let totalPlanB = Number(s1) + Number(s2) + Number(s3);
-                        
-                        let htmlPlanB = (totalPlanB > 0) ? `
+                    
+                        // El cuadro azul aparece solo si se generó algún contenido en el desglose
+                        let htmlPlanB = (desglosePlanB !== "") ? `
                             <div class="px-6 pb-4">
                                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-blue-900">
                                     <p class="text-[10px] font-black uppercase mb-2 flex items-center gap-2 opacity-60 tracking-widest">
