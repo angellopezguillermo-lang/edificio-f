@@ -505,8 +505,10 @@
         }
         
         // Ejecutar funciones al cargar
-        cargarDatos();
-        generarCalendarioAutomatico();
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarDatos();
+            generarCalendarioAutomatico();
+        });
         
         function generarCalendarioAutomatico() {
             const hoy = new Date();
