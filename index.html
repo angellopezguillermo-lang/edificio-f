@@ -164,6 +164,18 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3">
+                    <i class="fas fa-camera text-rose-500 text-lg"></i> Galería de Obras y Eventos
+                </h3>
+            </div>
+            
+            <div id="contenedor-galeria" class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <p class="text-slate-400 text-sm italic">Cargando fotos de las últimas obras...</p>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-indigo-800 font-bold text-sm uppercase tracking-widest flex items-center gap-3">
                     <i class="fas fa-bullhorn text-indigo-500 text-lg"></i> Comunicados y Acuerdos
                 </h3>
             </div>
@@ -179,11 +191,35 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="contenedor-unidades"></div>
 
+        <div id="modal-galeria" class="fixed inset-0 z-[100] hidden bg-slate-950/90 backdrop-blur-sm p-4 flex-col justify-center items-center">
+            <button onclick="cerrarGaleria()" class="absolute top-6 right-6 text-white text-3xl hover:text-rose-400">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="max-w-4xl w-full flex flex-col gap-4">
+                <div id="visor-imagen" class="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
+                    <img id="foto-activa" src="" class="w-full h-full object-contain">
+                    
+                    <button onclick="cambiarFoto(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-4 rounded-full text-white transition-all">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button onclick="cambiarFoto(1)" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-4 rounded-full text-white transition-all">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div id="contador-fotos" class="text-center text-white/60 font-black text-xs uppercase tracking-widest"></div>
+            </div>
+        </div>
     </main>
 
     <script>
         const URL_CUOTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=181872201&single=true&output=csv";
         const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=859871361&single=true&output=csv";
+        const URL_FOTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMQOCU1LLf-l3ipsDUYpkSoyrW8EmnYvU8BtPJXYkUv59IngKwUGjbQSeQxY3GieD8WjxnXU62WUJ_/pub?gid=36559296&single=true&output=csv";
+
+        // Variables globales para el visor de fotos
+        let fotosActuales = [];
+        let indiceActual = 0;
     
         function copiarTarjeta() {
             const numero = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
@@ -198,7 +234,64 @@
                 }, 2000);
             });
         }
-    
+
+        function cargarGaleria() {
+            Papa.parse(URL_FOTOS, {
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(results) {
+                    const contenedor = document.getElementById('contenedor-galeria');
+                    contenedor.innerHTML = "";
+                    
+                    results.data.forEach(row => {
+                        const listaUrls = row.URLs_Fotos.split(',').map(u => u.trim());
+                        const tieneVarias = listaUrls.length > 1;
+                        
+                        const item = document.createElement('div');
+                        item.className = "cursor-pointer group bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden hover:border-indigo-400 transition-all";
+                        item.onclick = () => abrirGaleria(listaUrls);
+                        
+                        item.innerHTML = `
+                            <div class="aspect-video overflow-hidden relative">
+                                <img src="${listaUrls[0]}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                ${tieneVarias ? `
+                                    <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-lg font-bold flex items-center gap-1">
+                                        <i class="fas fa-images"></i> +${listaUrls.length - 1} fotos
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="p-4">
+                                <span class="text-[9px] font-black text-indigo-500 uppercase">${row.Fecha}</span>
+                                <h4 class="text-sm font-bold text-slate-800">${row.Título}</h4>
+                            </div>
+                        `;
+                        contenedor.appendChild(item);
+                    });
+                }
+            });
+        }
+        
+        function abrirGaleria(urls) {
+            fotosActuales = urls;
+            indiceActual = 0;
+            actualizarVisor();
+            document.getElementById('modal-galeria').classList.remove('hidden');
+            document.getElementById('modal-galeria').classList.add('flex');
+        }
+        
+        function cerrarGaleria() {
+            document.getElementById('modal-galeria').classList.add('hidden');
+        }
+        
+        function cambiarFoto(direccion) {
+            indiceActual = (indiceActual + direccion + fotosActuales.length) % fotosActuales.length;
+            actualizarVisor();
+        }
+        
+        function actualizarVisor() {
+            document.getElementById('foto-activa').src = fotosActuales[indiceActual];
+            document.getElementById('contador-fotos').innerText = `Imagen ${indiceActual + 1} de ${fotosActuales.length}`;
+        }
+        
         async function cargarDatos() {
             // 1. CARGAR AVISOS
             Papa.parse(URL_AVISOS, {
@@ -407,6 +500,8 @@
                     }
                 }
             });
+            // 3. CARGAR GALERÍA DE FOTOS
+            cargarGaleria();
         }
         
         // Ejecutar funciones al cargar
