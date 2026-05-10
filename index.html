@@ -243,7 +243,15 @@
                     contenedor.innerHTML = "";
                     
                     results.data.forEach(row => {
-                        const listaUrls = row.URLs_Fotos.split(',').map(u => u.trim());
+                        const listaUrls = row.URLs_Fotos.split(',').map(u => {
+                            let url = u.trim();
+                            // Si es un enlace de Drive, lo convertimos a visualización directa
+                            if (url.includes('drive.google.com')) {
+                                const id = url.split('/d/')[1]?.split('/')[0];
+                                return `https://lh3.googleusercontent.com/d/${id}`;
+                            }
+                            return url;
+                        });
                         const tieneVarias = listaUrls.length > 1;
                         
                         const item = document.createElement('div');
