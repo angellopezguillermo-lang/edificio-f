@@ -354,7 +354,7 @@
                             return {
                                 clase: 'text-amber-500',
                                 icono: '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO',
-                                subtexto: 'No reportado a la torre'
+                                subtexto: 'No reportado a la representante'
                             };
                         } else {
                             return {
@@ -390,9 +390,12 @@
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
                     
                         // CÁLCULO TOTAL (Incluye pagos externos en la suma de la torre)
+                        // Solo sumamos si el pago fue validado localmente ('pagado')
                         let totalVecinoOperativo = 0;
-                        if (col[2]?.toLowerCase() === 'pagado' || col[2]?.toLowerCase() === 'externo') totalVecinoOperativo += cuotaAguaMonto;
-                        if (col[5]?.toLowerCase() === 'pagado' || col[5]?.toLowerCase() === 'externo') totalVecinoOperativo += cuotaRioMonto;
+                        if (col[2]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaAguaMonto;
+                        if (col[5]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaRioMonto;
+                        
+                        // Las multas y planes B se mantienen igual si están liquidados
                         if (multaPagada) totalVecinoOperativo += multaMonto;
                         totalVecinoOperativo += (s1 + s2 + s3);
                     
