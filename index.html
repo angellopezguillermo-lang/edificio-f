@@ -299,6 +299,31 @@
             document.getElementById('foto-activa').src = fotosActuales[indiceActual];
             document.getElementById('contador-fotos').innerText = `Imagen ${indiceActual + 1} de ${fotosActuales.length}`;
         }
+
+        // Función auxiliar para determinar el estilo del estatus de pago
+        const obtenerInfoEstatus = (valorEstatus, fechaPago) => {
+            const val = valorEstatus?.trim().toLowerCase();
+            
+            if (val === 'pagado') {
+                return {
+                    clase: 'text-green-600',
+                    icono: '<i class="fas fa-check-circle"></i> PAGADO',
+                    subtexto: 'Fecha: ' + (fechaPago || '-')
+                };
+            } else if (val === 'externo') {
+                return {
+                    clase: 'text-amber-500', // Color ámbar/naranja para advertencia
+                    icono: '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO',
+                    subtexto: 'No reportado a la representante'
+                };
+            } else {
+                return {
+                    clase: 'text-red-500',
+                    icono: '<i class="fas fa-clock"></i> PENDIENTE',
+                    subtexto: 'Esperando pago'
+                };
+            }
+        };
         
         async function cargarDatos() {
             // 1. CARGAR AVISOS
@@ -348,8 +373,14 @@
                     
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
-                        const aguaPagado = col[2]?.trim().toLowerCase() === 'pagado';
-                        const rioPagado = col[5]?.trim().toLowerCase() === 'pagado';
+                        // Obtenemos la configuración visual para Agua y Río
+                        const infoAgua = obtenerInfoEstatus(col[2], col[3]);
+                        const infoRio = obtenerInfoEstatus(col[5], col[6]);
+                        
+                        // Lógica para el cálculo del total (Solo sumamos si dice 'pagado' o 'externo')
+                        let totalVecinoOperativo = 0;
+                        if (col[2]?.trim().toLowerCase() === 'pagado' || col[2]?.trim().toLowerCase() === 'externo') totalVecinoOperativo += cuotaAguaMonto;
+                        if (col[5]?.trim().toLowerCase() === 'pagado' || col[5]?.trim().toLowerCase() === 'externo') totalVecinoOperativo += cuotaRioMonto;
                     
                         // --- PASO 1: CAPTURA LOS VALORES ORIGINALES (Para lógica visual) ---
                         const rawS1 = col[10];
@@ -461,17 +492,17 @@
                             <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-50 mb-4 text-center">
                                 <div class="p-5">
                                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Agua ($${cuotaAguaMonto})</div>
-                                    <div class="${aguaPagado ? 'text-green-600' : 'text-red-500'} font-black text-base mb-1">
-                                        ${aguaPagado ? '<i class="fas fa-check-circle"></i> PAGADO' : '<i class="fas fa-clock"></i> PENDIENTE'}
+                                    <div class="${infoAgua.clase} font-black text-base mb-1">
+                                        ${infoAgua.icono}
                                     </div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${aguaPagado ? 'Fecha: ' + col[3] : 'Esperando pago'}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${infoAgua.subtexto}</div>
                                 </div>
                                 <div class="p-5">
                                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Río ($${cuotaRioMonto})</div>
-                                    <div class="${rioPagado ? 'text-green-600' : 'text-red-500'} font-black text-base mb-1">
-                                        ${rioPagado ? '<i class="fas fa-check-circle"></i> PAGADO' : '<i class="fas fa-clock"></i> PENDIENTE'}
+                                    <div class="${infoRio.clase} font-black text-base mb-1">
+                                        ${infoRio.icono}
                                     </div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${rioPagado ? 'Fecha: ' + col[6] : 'Esperando pago'}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${infoRio.subtexto}</div>
                                 </div>
                             </div>
                             ${htmlPozo}
