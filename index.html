@@ -299,31 +299,6 @@
             document.getElementById('foto-activa').src = fotosActuales[indiceActual];
             document.getElementById('contador-fotos').innerText = `Imagen ${indiceActual + 1} de ${fotosActuales.length}`;
         }
-
-        // Función auxiliar para determinar el estilo del estatus de pago
-        const obtenerInfoEstatus = (valorEstatus, fechaPago) => {
-            const val = valorEstatus?.trim().toLowerCase();
-            
-            if (val === 'pagado') {
-                return {
-                    clase: 'text-green-600',
-                    icono: '<i class="fas fa-check-circle"></i> PAGADO',
-                    subtexto: 'Fecha: ' + (fechaPago || '-')
-                };
-            } else if (val === 'externo') {
-                return {
-                    clase: 'text-amber-500', // Color ámbar/naranja para advertencia
-                    icono: '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO',
-                    subtexto: 'No reportado a la representante'
-                };
-            } else {
-                return {
-                    clase: 'text-red-500',
-                    icono: '<i class="fas fa-clock"></i> PENDIENTE',
-                    subtexto: 'Esperando pago'
-                };
-            }
-        };
         
         async function cargarDatos() {
             // 1. CARGAR AVISOS
@@ -366,28 +341,43 @@
                         `;
                     }
     
-                    const formatoMoneda = (valor) => valor.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 });
+                    // FUNCIÓN INTERNA PARA RENDERIZAR ESTATUS (Evita errores de scope)
+                    const obtenerInfoEstatus = (valorEstatus, fechaPago) => {
+                        const val = valorEstatus?.trim().toLowerCase();
+                        if (val === 'pagado') {
+                            return {
+                                clase: 'text-green-600',
+                                icono: '<i class="fas fa-check-circle"></i> PAGADO',
+                                subtexto: 'Fecha: ' + (fechaPago || '-')
+                            };
+                        } else if (val === 'externo') {
+                            return {
+                                clase: 'text-amber-500',
+                                icono: '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO',
+                                subtexto: 'No reportado a la torre'
+                            };
+                        } else {
+                            return {
+                                clase: 'text-red-500',
+                                icono: '<i class="fas fa-clock"></i> PENDIENTE',
+                                subtexto: 'Esperando pago'
+                            };
+                        }
+                    };
 
                     datos.forEach(col => {
-                        if (!col[0]) return; // Saltar filas vacías
+                        if (!col[0]) return; 
                     
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
-                        // Obtenemos la configuración visual para Agua y Río
+                        
+                        // Lógica de estatus corregida
                         const infoAgua = obtenerInfoEstatus(col[2], col[3]);
                         const infoRio = obtenerInfoEstatus(col[5], col[6]);
-                        
-                        // Lógica para el cálculo del total (Solo sumamos si dice 'pagado' o 'externo')
-                        let totalVecinoOperativo = 0;
-                        if (col[2]?.trim().toLowerCase() === 'pagado' || col[2]?.trim().toLowerCase() === 'externo') totalVecinoOperativo += cuotaAguaMonto;
-                        if (col[5]?.trim().toLowerCase() === 'pagado' || col[5]?.trim().toLowerCase() === 'externo') totalVecinoOperativo += cuotaRioMonto;
-                    
-                        // --- PASO 1: CAPTURA LOS VALORES ORIGINALES (Para lógica visual) ---
+
                         const rawS1 = col[10];
                         const rawS2 = col[11];
                         const rawS3 = col[12];
-                    
-                        // --- PASO 2: CONVERSIÓN A NÚMERO (Para cálculos matemáticos) ---
                         const s1 = parseFloat(rawS1) || 0;
                         const s2 = parseFloat(rawS2) || 0;
                         const s3 = parseFloat(rawS3) || 0;
@@ -399,10 +389,10 @@
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
                     
-                        // CÁLCULO TOTAL POR VECINO (Se mantiene igual, sumando los ceros si existen)
+                        // CÁLCULO TOTAL (Incluye pagos externos en la suma de la torre)
                         let totalVecinoOperativo = 0;
-                        if (aguaPagado) totalVecinoOperativo += cuotaAguaMonto;
-                        if (rioPagado) totalVecinoOperativo += cuotaRioMonto;
+                        if (col[2]?.toLowerCase() === 'pagado' || col[2]?.toLowerCase() === 'externo') totalVecinoOperativo += cuotaAguaMonto;
+                        if (col[5]?.toLowerCase() === 'pagado' || col[5]?.toLowerCase() === 'externo') totalVecinoOperativo += cuotaRioMonto;
                         if (multaPagada) totalVecinoOperativo += multaMonto;
                         totalVecinoOperativo += (s1 + s2 + s3);
                     
@@ -412,24 +402,17 @@
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
                         
-                        // --- PASO 3: CONSTRUCCIÓN DEL DESGLOSE VISUAL ---
                         let desglosePlanB = "";
-                    
-                        // Solo verificamos si la celda original NO está vacía. 
-                        // Si tiene un "0", pasará la prueba y se mostrará.
                         if (rawS1 !== "" && rawS1 !== null && typeof rawS1 !== 'undefined') {
                             desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
                         }
-                        
                         if (rawS2 !== "" && rawS2 !== null && typeof rawS2 !== 'undefined') {
                             desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
                         }
-                        
                         if (rawS3 !== "" && rawS3 !== null && typeof rawS3 !== 'undefined') {
                             desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
                         }
                     
-                        // El cuadro azul aparece solo si se generó algún contenido en el desglose
                         let htmlPlanB = (desglosePlanB !== "") ? `
                             <div class="px-6 pb-4">
                                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-blue-900">
@@ -515,22 +498,18 @@
                         contenedor.appendChild(tarjeta);
                     });
     
-                    // --- ACTUALIZACIÓN DE TOTALES EN EL HEADER ---
                     const META_GLOBAL_POZO = 48000; 
                     const porcentajeGlobal = Math.min((sumaPozoTotal / META_GLOBAL_POZO) * 100, 100);
                     
-                    // Actualizamos los textos con formato de moneda
                     document.getElementById('gran-total-edificio').innerText = `$${sumaGeneralEdificio.toLocaleString('es-MX', {minimumFractionDigits: 0})}`;
                     document.getElementById('total-pozo-recolectado').innerText = `$${sumaPozoTotal.toLocaleString('es-MX', {minimumFractionDigits: 0})}`;
                     
-                    // Actualizamos la gráfica de progreso global
                     const barraGlobal = document.getElementById('barra-pozo-global');
                     const porcentajeTexto = document.getElementById('porcentaje-pozo-global');
                     
                     porcentajeTexto.innerText = `${Math.round(porcentajeGlobal)}%`;
                     barraGlobal.style.width = `${porcentajeGlobal}%`;
                     
-                    // Feedback visual de meta cumplida
                     if(porcentajeGlobal >= 100) {
                         barraGlobal.classList.remove('bg-emerald-400');
                         barraGlobal.classList.add('bg-yellow-400', 'shadow-[0_0_12px_rgba(250,204,21,0.6)]');
@@ -539,7 +518,6 @@
                     }
                 }
             });
-            // 3. CARGAR GALERÍA DE FOTOS
             cargarGaleria();
         }
         
@@ -627,4 +605,3 @@
     </script>
 </body>
 </html>
-
