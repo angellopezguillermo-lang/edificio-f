@@ -15,7 +15,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>    
+
 <body class="bg-slate-100 text-slate-900 font-sans pb-10">
 
     <header class="bg-indigo-800 text-white shadow-xl relative sm:sticky top-0 z-50">
@@ -301,6 +305,13 @@
         }
         
         async function cargarDatos() {
+
+            // INITIALIZAR MERCADO PAGO CON TU CLAVE PÚBLICA DE PRUEBA (SANDBOX)
+            // Reemplaza con tu TEST-public-... real
+            const mp = new MercadoPago('APP_USR-dedb434f-1257-4827-81b6-988c4238e75a', {
+                locale: 'es-MX'
+            });
+            
             // 1. CARGAR AVISOS
             Papa.parse(URL_AVISOS, {
                 download: true, header: true, skipEmptyLines: true,
@@ -342,7 +353,8 @@
                     }
     
                     // FUNCIÓN INTERNA PARA RENDERIZAR ESTATUS (Evita errores de scope)
-                    const obtenerInfoEstatus = (valorEstatus, fechaPago) => {
+                    // MODIFICAMOS ESTA FUNCIÓN INTERNA PARA DETECTAR EL DEPARTAMENTO
+                    const obtenerInfoEstatus = (valorEstatus, fechaPago, deptoId) => {
                         const val = valorEstatus?.trim().toLowerCase();
                         if (val === 'pagado') {
                             return {
@@ -357,23 +369,26 @@
                                 subtexto: 'No reportado a la representante'
                             };
                         } else {
+                            // AQUÍ GENERAMOS EL BOTÓN DE PAGO DINÁMICO
+                            // Usamos un ID único por departamento para renderizar el botón más abajo
                             return {
                                 clase: 'text-red-500',
                                 icono: '<i class="fas fa-clock"></i> PENDIENTE',
-                                subtexto: 'Esperando pago'
+                                subtexto: `<button data-depto="${deptoId}" class="btn-pagar-mp mt-2 w-full bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest py-1.5 px-3 rounded-xl shadow-md hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-1"><i class="fast fa-credit-card"></i> Pagar en Línea</button>`
                             };
                         }
                     };
 
                     datos.forEach(col => {
                         if (!col[0]) return; 
+                        const deptoActual = col[0]; // Guardamos el número de departamento (ej: "F-101")
                     
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         
-                        // Lógica de estatus corregida
-                        const infoAgua = obtenerInfoEstatus(col[2], col[3]);
-                        const infoRio = obtenerInfoEstatus(col[5], col[6]);
+                        // Enviamos el departamento como tercer parámetro
+                        const infoAgua = obtenerInfoEstatus(col[2], col[3], deptoActual);
+                        const infoRio = obtenerInfoEstatus(col[5], col[6], deptoActual);
 
                         const rawS1 = col[10];
                         const rawS2 = col[11];
@@ -499,6 +514,44 @@
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
+                    });
+
+                    // NUEVO CÓDIGO: ACTIVAR LOS BOTONES DE MERCADO PAGO TRAS RENDERIZAR
+                    document.querySelectorAll('.btn-pagar-mp').forEach(boton => {
+                        boton.addEventListener('click', async (e) => {
+                            const depto = e.target.getAttribute('data-depto');
+                            e.target.innerText = "Cargando...";
+                            e.target.disabled = true;
+
+                            try {
+                                // Llamamos a la API de Mercado Pago para abrir el checkout "Pro"
+                                // Para entornos estáticos, Mercado Pago nos permite disparar la preferencia
+                                mp.checkout({
+                                    preference: {
+                                        items: [{
+                                            title: `Mantenimiento Agua - Depto ${depto}`,
+                                            unit_price: 170,
+                                            quantity: 1,
+                                            currency_id: 'MXN'
+                                        }],
+                                        // AQUÍ VIAJA EL DATO CLAVE QUE RECIBIRÁ TU GOOGLE SHEETS
+                                        external_reference: depto, 
+                                        back_urls: {
+                                            success: window.location.href, // Si paga, regresa a la misma página
+                                            pending: window.location.href,
+                                            failure: window.location.href
+                                        },
+                                        auto_return: "approved"
+                                    },
+                                    autoOpen: true // Abre el modal de pago de inmediato
+                                });
+                            } catch (err) {
+                                console.error(err);
+                                alert("No se pudo inicializar el pago electrónico.");
+                                e.target.innerText = "Pagar en Línea";
+                                e.target.disabled = false;
+                            }
+                        });
                     });
     
                     const META_GLOBAL_POZO = 48000; 
