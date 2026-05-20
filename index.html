@@ -353,6 +353,9 @@
                     }
     
                     // 1. Añadimos concepto y monto a los parámetros que recibe la función
+                    // ==========================================
+                    // DEFINICIÓN CORREGIDA DE OBTENER INFO ESTATUS
+                    // ==========================================
                     const obtenerInfoEstatus = (valorEstatus, fechaPago, deptoId, concepto, monto) => {
                         const val = valorEstatus?.trim().toLowerCase();
                         if (val === 'pagado') {
@@ -368,11 +371,10 @@
                                 subtexto: 'No reportado a la representante'
                             };
                         } else {
-                            // Botón dinámico con identificador único por departamento, concepto y monto
+                            // Ahora el botón guarda nativamente el concepto ("Agua"/"Cuota Río") y su precio exacto (170/30)
                             return {
                                 clase: 'text-red-500',
                                 icono: '<i class="fas fa-clock"></i> PENDIENTE',
-                                // 2. INYECTAMOS data-concepto Y data-monto EN EL HTML DEL BOTÓN:
                                 subtexto: `<button data-depto="${deptoId}" data-concepto="${concepto}" data-monto="${monto}" class="btn-pagar-mp mt-2 w-full bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest py-1.5 px-3 rounded-xl shadow-md hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-1"><i class="fas fa-credit-card"></i> Pagar en Línea</button>`
                             };
                         }
@@ -385,11 +387,9 @@
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         
-                        // 1. Para el Agua: Le pasamos el texto "Agua" y el número 170 fijo.
-                        const infoAgua = obtenerInfoEstatus(col[2], col[3], deptoActual, "Agua", 170);
-                        
-                        // 2. Para Río: Le pasamos el texto "Cuota Río" y el valor que viene en la columna 4 (col[4] es la columna E de tu hoja)
-                        const infoRio = obtenerInfoEstatus(col[5], col[6], deptoActual, "Cuota Río", col[4]);
+                        // Enviamos los 5 datos necesarios para armar el botón inteligente
+                        const infoAgua = obtenerInfoEstatus(col[2], col[3], deptoActual, "Agua", cuotaAguaMonto);
+                        const infoRio = obtenerInfoEstatus(col[5], col[6], deptoActual, "Cuota Río", cuotaRioMonto);
 
                         const rawS1 = col[10];
                         const rawS2 = col[11];
