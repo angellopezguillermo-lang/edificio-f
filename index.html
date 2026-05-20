@@ -618,79 +618,85 @@
         // NUEVA FUNCIÓN EXTERNA INDEPENDIENTE para controlar los botones
         // ==========================================
         function inicializarBotonesPago() {
-        document.querySelectorAll('.btn-pagar-mp').forEach(boton => {
-            // Clonamos el nodo para asegurar que no arrastre listeners duplicados si se refrescan los datos
-            const botonNuevo = boton.cloneNode(true);
-            boton.parentNode.replaceChild(botonNuevo, boton);
-    
-            botonNuevo.addEventListener('click', function(e) {
-                // 1. EXTRAEMOS LOS DATOS DINÁMICOS DEL BOTÓN (Asegúrate de que tus botones tengan estos atributos en el HTML)
-                const depto = botonNuevo.getAttribute('data-depto');
-                const concepto = botonNuevo.getAttribute('data-concepto'); // Ej: "Agua" o "Cuota Río"
-                const monto = botonNuevo.getAttribute('data-monto');       // Ej: 170 o 30
-                
-                botonNuevo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando orden...';
-                botonNuevo.disabled = true;
-    
-                // Nombre aleatorio único para la función callback temporal (JSONP)
-                const callbackName = 'mp_callback_' + Math.round(Math.random() * 100000);
-                
-                // Definimos la respuesta global que esperará Google Apps Script
-                window[callbackName] = function(datosPago) {
-                    // Limpieza inmediata del script inyectado
-                    document.getElementById(callbackName)?.remove();
-                    delete window[callbackName];
-    
-                    if (datosPago.error || !datosPago.id) {
-                        console.error("Error desde Google Apps Script:", datosPago.error);
-                        alert("No se pudo iniciar el cobro. Revisa las credenciales de tu backend.");
-                        botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
-                        botonNuevo.disabled = false;
-                        return;
-                    }
-    
-                    try {
-                        // Abrimos la pasarela de Mercado Pago directamente con el ID obtenido
-                        const checkout = mp.checkout({
-                            preference: {
-                                id: datosPago.id
-                            }
-                        });
-                        checkout.open();
-                    } catch (err) {
-                        console.error("Error al abrir SDK Mercado Pago:", err);
-                        alert("Ocurrió un problema técnico al levantar la ventana de Mercado Pago.");
-                    } finally {
-                        // Restauramos el botón. Si la página se congela tras cancelar, 
-                        // añadir un pequeño retraso (setTimeout) ayuda a que el navegador recupere el foco.
-                        setTimeout(() => {
-                            botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
-                            botonNuevo.disabled = false;
-                        }, 1000);
-                    }
-                };
-    
-                // 2. ENVIAMOS LOS NUEVOS PARÁMETROS EN LA URL (Añadimos concepto y monto)
-                // Codificamos el concepto con encodeURIComponent para evitar problemas con espacios o acentos
-                const urlGoogleScript = `https://script.google.com/macros/s/AKfycbxLYOwFuCAMka3ix9XwbWPxx0SUskdpoyXrQPFfZ0Rhoohn2NQVLmbaIoiPYAJ4YMKu/exec?depto=${depto}&concepto=${encodeURIComponent(concepto)}&monto=${monto}&callback=${callbackName}`;
-                
-                const scriptInteligente = document.createElement('script');
-                scriptInteligente.id = callbackName;
-                scriptInteligente.src = urlGoogleScript;
-                
-                // Manejador en caso de fallas críticas de conectividad de red
-                scriptInteligente.onerror = function() {
-                    alert("Error de enlace. No se pudo conectar con el servidor de cobros.");
+    document.querySelectorAll('.btn-pagar-mp').forEach(boton => {
+        // Clonamos el nodo para asegurar que no arrastre listeners duplicados si se refrescan los datos
+        const botonNuevo = boton.cloneNode(true);
+        boton.parentNode.replaceChild(botonNuevo, boton);
+
+        botonNuevo.addEventListener('click', function(e) {
+            const depto = botonNuevo.getAttribute('data-depto');
+            const concepto = botonNuevo.getAttribute('data-concepto'); 
+            const monto = botonNuevo.getAttribute('data-monto');       
+            
+            // Validación visual de seguridad para evitar doble clic veloz
+            if (botonNuevo.disabled) return;
+
+            botonNuevo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando orden...';
+            botonNuevo.disabled = true;
+
+            // Nombre aleatorio único para la función callback temporal (JSONP)
+            const callbackName = 'mp_callback_' + Math.round(Math.random() * 100000);
+            
+            // Definimos la respuesta global que esperará Google Apps Script
+            window[callbackName] = function(datosPago) {
+                // Limpieza inmediata del script inyectado
+                document.getElementById(callbackName)?.remove();
+                delete window[callbackName];
+
+                if (datosPago.error || !datosPago.id) {
+                    console.error("Error desde Google Apps Script:", datosPago.error);
+                    alert("No se pudo iniciar el cobro. Revisa las credenciales de tu backend.");
                     botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
                     botonNuevo.disabled = false;
-                    document.getElementById(callbackName)?.remove();
-                    delete window[callbackName];
-                };
-    
-                document.body.appendChild(scriptInteligente);
-            });
+                    return;
+                }
+
+                try {
+                    // Abrimos la pasarela de Mercado Pago directamente con el ID obtenido
+                    const checkout = mp.checkout({
+                        preference: {
+                            id: datosPago.id
+                        }
+                    });
+                    
+                    checkout.open();
+                    
+                    // MODIFICACIÓN CRÍTICA: Le damos 3 segundos completos de colchón al navegador 
+                    // para que levante el iframe de Mercado Pago antes de reactivar el botón de fondo.
+                    // Esto rompe por completo el bucle de congelamiento si cierran la pestaña.
+                    setTimeout(() => {
+                        botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                        botonNuevo.disabled = false;
+                    }, 3000);
+
+                } catch (err) {
+                    console.error("Error al abrir SDK Mercado Pago:", err);
+                    alert("Ocurrió un problema técnico al levantar la ventana de Mercado Pago.");
+                    botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                    botonNuevo.disabled = false;
+                }
+            };
+
+            // Inyección dinámica de la etiqueta script (Salto absoluto del bloqueo CORS)
+            const urlGoogleScript = `https://script.google.com/macros/s/AKfycbxLYOwFuCAMka3ix9XwbWPxx0SUskdpoyXrQPFfZ0Rhoohn2NQVLmbaIoiPYAJ4YMKu/exec?depto=${depto}&concepto=${encodeURIComponent(concepto)}&monto=${monto}&callback=${callbackName}`;
+            
+            const scriptInteligente = document.createElement('script');
+            scriptInteligente.id = callbackName;
+            scriptInteligente.src = urlGoogleScript;
+            
+            // Manejador en caso de fallas críticas de conectividad de red o errores de script
+            scriptInteligente.onerror = function() {
+                alert("Error de enlace. No se pudo conectar con el servidor de cobros.");
+                botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                botonNuevo.disabled = false;
+                document.getElementById(callbackName)?.remove();
+                delete window[callbackName];
+            };
+
+            document.body.appendChild(scriptInteligente);
         });
-    }
+    });
+}
 </script>
 </body>
 </html>
