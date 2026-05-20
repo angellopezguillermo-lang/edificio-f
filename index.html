@@ -526,25 +526,29 @@
                             botonElemento.disabled = true;
 
                             try {
-                                // REEMPLAZA ESTA URL POR TU URL DE GOOGLE APPS SCRIPT (la que termina en /exec)
+                                // Tu URL real completa sin puntos suspensivos
                                 const urlGoogleScript = `https://script.google.com/macros/s/AKfycbxLYOwFuCAMka3ix9XwbWPxx0SUskdpoyXrQPFfZ0Rhoohn2NQVLmbaIoiPYAJ4YMKu/exec?depto=${depto}`;
 
-                                // Le pedimos el ID de pago seguro a Google
-                                const respuesta = await fetch(urlGoogleScript);
+                                // AJUSTE AQUÍ: Forzamos a fetch a gestionar las redirecciones de Google de forma transparente
+                                const respuesta = await fetch(urlGoogleScript, {
+                                    method: 'GET',
+                                    mode: 'cors',
+                                    redirect: 'follow' // Esto obliga al navegador a seguir el desvío de Google manteniendo los permisos
+                                });
+                                
                                 const datosPago = await respuesta.json();
 
                                 if (datosPago.error || !datosPago.id) {
                                     throw new Error(datosPago.error || "No se obtuvo ID de preferencia");
                                 }
 
-                                // Con el ID seguro en mano, inicializamos el modal nativo
+                                // Si todo va bien, inicializamos el modal
                                 const checkout = mp.checkout({
                                     preference: {
-                                        id: datosPago.id // Usamos el ID seguro generado por el backend
+                                        id: datosPago.id
                                     }
                                 });
 
-                                // Abrimos la pasarela sin restricciones de CORS
                                 await checkout.open();
 
                             } catch (err) {
