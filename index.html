@@ -516,40 +516,43 @@
                         contenedor.appendChild(tarjeta);
                     });
 
-                    // NUEVO CÓDIGO: ACTIVAR LOS BOTONES DE MERCADO PAGO TRAS RENDERIZAR
+                    // CÓDIGO DEFINITIVO PARA INICIALIZAR EL CHECKOUT VIA SERVERLESS
                     document.querySelectorAll('.btn-pagar-mp').forEach(boton => {
                         boton.addEventListener('click', async (e) => {
-                            const depto = e.target.getAttribute('data-depto');
-                            e.target.innerText = "Cargando...";
-                            e.target.disabled = true;
+                            const botonElemento = e.target.closest('.btn-pagar-mp');
+                            const depto = botonElemento.getAttribute('data-depto');
+                            
+                            botonElemento.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando orden...';
+                            botonElemento.disabled = true;
 
                             try {
-                                // Llamamos a la API de Mercado Pago para abrir el checkout "Pro"
-                                // Para entornos estáticos, Mercado Pago nos permite disparar la preferencia
-                                mp.checkout({
+                                // REEMPLAZA ESTA URL POR TU URL DE GOOGLE APPS SCRIPT (la que termina en /exec)
+                                const urlGoogleScript = `https://script.google.com/macros/s/.../exec?depto=${depto}`;
+
+                                // Le pedimos el ID de pago seguro a Google
+                                const respuesta = await fetch(urlGoogleScript);
+                                const datosPago = await respuesta.json();
+
+                                if (datosPago.error || !datosPago.id) {
+                                    throw new Error(datosPago.error || "No se obtuvo ID de preferencia");
+                                }
+
+                                // Con el ID seguro en mano, inicializamos el modal nativo
+                                const checkout = mp.checkout({
                                     preference: {
-                                        items: [{
-                                            title: `Mantenimiento Agua - Depto ${depto}`,
-                                            unit_price: 170,
-                                            quantity: 1,
-                                            currency_id: 'MXN'
-                                        }],
-                                        // AQUÍ VIAJA EL DATO CLAVE QUE RECIBIRÁ TU GOOGLE SHEETS
-                                        external_reference: depto, 
-                                        back_urls: {
-                                            success: window.location.href, // Si paga, regresa a la misma página
-                                            pending: window.location.href,
-                                            failure: window.location.href
-                                        },
-                                        auto_return: "approved"
-                                    },
-                                    autoOpen: true // Abre el modal de pago de inmediato
+                                        id: datosPago.id // Usamos el ID seguro generado por el backend
+                                    }
                                 });
+
+                                // Abrimos la pasarela sin restricciones de CORS
+                                await checkout.open();
+
                             } catch (err) {
-                                console.error(err);
-                                alert("No se pudo inicializar el pago electrónico.");
-                                e.target.innerText = "Pagar en Línea";
-                                e.target.disabled = false;
+                                console.error("Error al procesar el pago:", err);
+                                alert("No se pudo iniciar el cobro. Intenta más tarde.");
+                            } finally {
+                                botonElemento.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                                botonElemento.disabled = false;
                             }
                         });
                     });
