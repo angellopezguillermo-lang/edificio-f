@@ -224,6 +224,9 @@
         // Variables globales para el visor de fotos
         let fotosActuales = [];
         let indiceActual = 0;
+        
+        // Variable global para Mercado Pago (Inicializada con credenciales Sandbox de prueba)
+        let mp;
     
         function copiarTarjeta() {
             const numero = document.getElementById('num-tarjeta').innerText.replace(/\s/g, '');
@@ -249,7 +252,6 @@
                     results.data.forEach(row => {
                         const listaUrls = row.URLs_Fotos.split(',').map(u => {
                             let url = u.trim();
-                            // Si es un enlace de Drive, lo convertimos a visualización directa
                             if (url.includes('drive.google.com')) {
                                 const id = url.split('/d/')[1]?.split('/')[0];
                                 return `https://lh3.googleusercontent.com/d/${id}`;
@@ -305,10 +307,8 @@
         }
         
         async function cargarDatos() {
-
-            // INITIALIZAR MERCADO PAGO CON TU CLAVE PÚBLICA DE PRUEBA (SANDBOX)
-            // Reemplaza con tu TEST-public-... real
-            const mp = new MercadoPago('APP_USR-dedb434f-1257-4827-81b6-988c4238e75a', {
+            // AJUSTE: Inicialización limpia usando tu Public Key de Pruebas (Sandbox)
+            mp = new MercadoPago('TEST-public-6633739039254476-051915-cb6014e76c117dcf20275cc1b069faaa-3412318987', {
                 locale: 'es-MX'
             });
             
@@ -352,8 +352,6 @@
                         `;
                     }
     
-                    // FUNCIÓN INTERNA PARA RENDERIZAR ESTATUS (Evita errores de scope)
-                    // MODIFICAMOS ESTA FUNCIÓN INTERNA PARA DETECTAR EL DEPARTAMENTO
                     const obtenerInfoEstatus = (valorEstatus, fechaPago, deptoId) => {
                         const val = valorEstatus?.trim().toLowerCase();
                         if (val === 'pagado') {
@@ -369,8 +367,7 @@
                                 subtexto: 'No reportado a la representante'
                             };
                         } else {
-                            // AQUÍ GENERAMOS EL BOTÓN DE PAGO DINÁMICO
-                            // Usamos un ID único por departamento para renderizar el botón más abajo
+                            // Botón dinámico con identificador único por departamento
                             return {
                                 clase: 'text-red-500',
                                 icono: '<i class="fas fa-clock"></i> PENDIENTE',
@@ -381,12 +378,11 @@
 
                     datos.forEach(col => {
                         if (!col[0]) return; 
-                        const deptoActual = col[0]; // Guardamos el número de departamento (ej: "F-101")
+                        const deptoActual = col[0];
                     
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         
-                        // Enviamos el departamento como tercer parámetro
                         const infoAgua = obtenerInfoEstatus(col[2], col[3], deptoActual);
                         const infoRio = obtenerInfoEstatus(col[5], col[6], deptoActual);
 
@@ -404,13 +400,9 @@
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
                     
-                        // CÁLCULO TOTAL (Incluye pagos externos en la suma de la torre)
-                        // Solo sumamos si el pago fue validado localmente ('pagado')
                         let totalVecinoOperativo = 0;
                         if (col[2]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaAguaMonto;
                         if (col[5]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaRioMonto;
-                        
-                        // Las multas y planes B se mantienen igual si están liquidados
                         if (multaPagada) totalVecinoOperativo += multaMonto;
                         totalVecinoOperativo += (s1 + s2 + s3);
                     
@@ -440,7 +432,7 @@
                                     <div class="text-sm space-y-2 font-bold">${desglosePlanB}</div>
                                 </div>
                             </div>` : '';
-    
+                    
                         let htmlMulta = multaMonto > 0 ? `
                             <div class="px-6 pb-4">
                                 <div class="${multaPagada ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border-2 rounded-2xl p-4 flex justify-between items-center">
@@ -454,7 +446,7 @@
                                     <div class="${multaPagada ? 'text-green-600' : 'text-orange-600'} font-black text-2xl">+$${multaMonto}</div>
                                 </div>
                             </div>` : '';
-    
+                    
                         let htmlPozo = `
                             <div class="px-6 pb-4">
                                 <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
@@ -478,7 +470,7 @@
                                     </div>
                                 </div>
                             </div>`;
-    
+                    
                         tarjeta.innerHTML = `
                             <div class="p-6 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                                 <div>
@@ -515,51 +507,6 @@
                         `;
                         contenedor.appendChild(tarjeta);
                     });
-
-                    // CÓDIGO DEFINITIVO PARA INICIALIZAR EL CHECKOUT VIA SERVERLESS
-                    document.querySelectorAll('.btn-pagar-mp').forEach(boton => {
-                        boton.addEventListener('click', async (e) => {
-                            const botonElemento = e.target.closest('.btn-pagar-mp');
-                            const depto = botonElemento.getAttribute('data-depto');
-                            
-                            botonElemento.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando orden...';
-                            botonElemento.disabled = true;
-
-                            try {
-                                // Tu URL real completa sin puntos suspensivos
-                                const urlGoogleScript = `https://script.google.com/macros/s/AKfycbxLYOwFuCAMka3ix9XwbWPxx0SUskdpoyXrQPFfZ0Rhoohn2NQVLmbaIoiPYAJ4YMKu/exec?depto=${depto}`;
-
-                                // AJUSTE AQUÍ: Forzamos a fetch a gestionar las redirecciones de Google de forma transparente
-                                const respuesta = await fetch(urlGoogleScript, {
-                                    method: 'GET',
-                                    mode: 'cors',
-                                    redirect: 'follow' // Esto obliga al navegador a seguir el desvío de Google manteniendo los permisos
-                                });
-                                
-                                const datosPago = await respuesta.json();
-
-                                if (datosPago.error || !datosPago.id) {
-                                    throw new Error(datosPago.error || "No se obtuvo ID de preferencia");
-                                }
-
-                                // Si todo va bien, inicializamos el modal
-                                const checkout = mp.checkout({
-                                    preference: {
-                                        id: datosPago.id
-                                    }
-                                });
-
-                                await checkout.open();
-
-                            } catch (err) {
-                                console.error("Error al procesar el pago:", err);
-                                alert("No se pudo iniciar el cobro. Intenta más tarde.");
-                            } finally {
-                                botonElemento.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
-                                botonElemento.disabled = false;
-                            }
-                        });
-                    });
     
                     const META_GLOBAL_POZO = 48000; 
                     const porcentajeGlobal = Math.min((sumaPozoTotal / META_GLOBAL_POZO) * 100, 100);
@@ -579,6 +526,9 @@
                         porcentajeTexto.classList.replace('bg-emerald-500', 'bg-yellow-500');
                         porcentajeTexto.innerHTML = '¡META LOGRADA! 🎉';
                     }
+
+                    // AJUSTE CRÍTICO: Activamos la función que escucha los clics una vez que todo el HTML se ha renderizado
+                    inicializarBotonesPago();
                 }
             });
             cargarGaleria();
@@ -592,20 +542,15 @@
         
         function generarCalendarioAutomatico() {
             const hoy = new Date();
-            // Normalizamos "hoy" para comparar solo fechas
             const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
             
-            // CONFIGURACIÓN DEL COMITÉ
-            // Fecha semilla: Lunes 2 de Marzo de 2026 (Semana 49)
             const fechaSemilla = new Date(2026, 2, 2); 
             const SEMANA_BASE_COMITE = 49; 
         
-            // Cálculo de la semana actual del comité
             const msPorSemana = 1000 * 60 * 60 * 24 * 7;
             const semanasTranscurridasDesdeSemilla = Math.floor((hoySoloFecha - fechaSemilla) / msPorSemana);
             const semanaActualDelComite = SEMANA_BASE_COMITE + semanasTranscurridasDesdeSemilla;
             
-            // Lógica de ciclos de 28 días (4 semanas) para el diseño visual
             const inicioCicloActual = new Date(fechaSemilla);
             inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasDesdeSemilla / 4) * 28));
         
@@ -621,8 +566,6 @@
                 finSemana.setDate(inicioSemana.getDate() + 6);
         
                 const esSemanaActual = (hoySoloFecha >= inicioSemana && hoySoloFecha <= finSemana);
-                
-                // Calculamos qué número de semana del comité le corresponde a este cuadro
                 const numSemanaCuadro = SEMANA_BASE_COMITE + Math.floor((inicioSemana - fechaSemilla) / msPorSemana);
                 
                 const estiloClase = esSemanaActual 
@@ -665,6 +608,76 @@
                 </div>
             `;
         }
-    </script>
+
+        // ==========================================
+        // NUEVA FUNCIÓN EXTERNA INDEPENDIENTE para controlar los botones
+        // ==========================================
+        function inicializarBotonesPago() {
+            document.querySelectorAll('.btn-pagar-mp').forEach(boton => {
+                // Clonamos el nodo para asegurar que no arrastre listeners duplicados si se refrescan los datos
+                const botonNuevo = boton.cloneNode(true);
+                boton.parentNode.replaceChild(botonNuevo, boton);
+
+                botonNuevo.addEventListener('click', function(e) {
+                    const depto = botonNuevo.getAttribute('data-depto');
+                    
+                    botonNuevo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando orden...';
+                    botonNuevo.disabled = true;
+
+                    // Nombre aleatorio único para la función callback temporal (JSONP)
+                    const callbackName = 'mp_callback_' + Math.round(Math.random() * 100000);
+                    
+                    // Definimos la respuesta global que esperará Google Apps Script
+                    window[callbackName] = function(datosPago) {
+                        // Limpieza inmediata del script inyectado
+                        document.getElementById(callbackName)?.remove();
+                        delete window[callbackName];
+
+                        if (datosPago.error || !datosPago.id) {
+                            console.error("Error desde Google Apps Script:", datosPago.error);
+                            alert("No se pudo iniciar el cobro. Revisa las credenciales de tu backend.");
+                            botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                            botonNuevo.disabled = false;
+                            return;
+                        }
+
+                        try {
+                            // Abrimos la pasarela de Mercado Pago directamente con el ID obtenido
+                            const checkout = mp.checkout({
+                                preference: {
+                                    id: datosPago.id
+                                }
+                            });
+                            checkout.open();
+                        } catch (err) {
+                            console.error("Error al abrir SDK Mercado Pago:", err);
+                            alert("Ocurrió un problema técnico al levantar la ventana de Mercado Pago.");
+                        } finally {
+                            botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                            botonNuevo.disabled = false;
+                        }
+                    };
+
+                    // Inyección dinámica de la etiqueta script (Salto absoluto del bloqueo CORS)
+                    const urlGoogleScript = `https://script.google.com/macros/s/AKfycbxLYOwFuCAMka3ix9XwbWPxx0SUskdpoyXrQPFfZ0Rhoohn2NQVLmbaIoiPYAJ4YMKu/exec?depto=${depto}&callback=${callbackName}`;
+                    
+                    const scriptInteligente = document.createElement('script');
+                    scriptInteligente.id = callbackName;
+                    scriptInteligente.src = urlGoogleScript;
+                    
+                    // Manejador en caso de fallas críticas de conectividad de red
+                    scriptInteligente.onerror = function() {
+                        alert("Error de enlace. No se pudo conectar con el servidor de cobros.");
+                        botonNuevo.innerHTML = '<i class="fas fa-credit-card"></i> Pagar en Línea';
+                        botonNuevo.disabled = false;
+                        document.getElementById(callbackName)?.remove();
+                        delete window[callbackName];
+                    };
+
+                    document.body.appendChild(scriptInteligente);
+                });
+            });
+        }
+</script>
 </body>
 </html>
