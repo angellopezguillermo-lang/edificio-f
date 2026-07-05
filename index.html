@@ -301,7 +301,7 @@
         }
         
         async function cargarDatos() {
-            // 1. CARGAR AVISOS
+            // 1. CARGAR AVISOS (Se mantiene igual)
             Papa.parse(URL_AVISOS, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
@@ -319,8 +319,8 @@
                     });
                 }
             });
-    
-            // 2. CARGAR CUOTAS Y UNIDADES
+
+            // 2. CARGAR CUOTAS Y UNIDADES (Con mejoras de semanas del comité y Depto 6/8)
             Papa.parse(URL_CUOTAS, {
                 download: true, header: false, skipEmptyLines: true,
                 complete: function(results) {
@@ -330,7 +330,7 @@
                     
                     let sumaGeneralEdificio = 0; 
                     let sumaPozoTotal = 0;      
-    
+
                     if(datos[0]) {
                         document.getElementById('mes-actual').innerText = datos[0][7] || "MES ACTUAL";
                         document.getElementById('nota-rio').innerText = datos[0][8] || "Sin notas.";
@@ -340,11 +340,37 @@
                             INFORMACIÓN ACTUALIZADA AL: ${fechaTexto}
                         `;
                     }
-    
-                    // FUNCIÓN INTERNA PARA RENDERIZAR ESTATUS (Evita errores de scope)
-                    const obtenerInfoEstatus = (valorEstatus, fechaPago) => {
+
+                    // --- CÁLCULO DE LAS SEMANAS DE COMITÉ PARA EL CICLO VISUAL ACTUAL ---
+                    const hoy = new Date();
+                    const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+                    const fechaSemilla = new Date(2026, 2, 2); // Lunes 2 de Marzo de 2026
+                    const SEMANA_BASE_COMITE = 49; 
+                    const msPorSemana = 1000 * 60 * 60 * 24 * 7;
+                    const semanasTranscurridasDesdeSemilla = Math.floor((hoySoloFecha - fechaSemilla) / msPorSemana);
+                    
+                    // Determinamos el inicio del ciclo de 4 semanas actual
+                    const inicioCicloActual = new Date(fechaSemilla);
+                    inicioCicloActual.setDate(fechaSemilla.getDate() + (Math.floor(semanasTranscurridasDesdeSemilla / 4) * 28));
+                    
+                    // Calculamos exactamente qué semanas del comité corresponden a la sem 1, 2 y 3 de este bloque
+                    const sem1Comite = SEMANA_BASE_COMITE + Math.floor((inicioCicloActual - fechaSemilla) / msPorSemana);
+                    const sem2Comite = sem1Comite + 1;
+                    const sem3Comite = sem1Comite + 2;
+                    // --------------------------------------------------------------------
+
+                    const obtenerInfoEstatus = (valorEstatus, fechaPago, numDepartamento) => {
                         const val = valorEstatus?.trim().toLowerCase();
+                        
                         if (val === 'pagado') {
+                            // Verificación especial y discreta para el Departamento 6
+                            if (numDepartamento === "6") {
+                                return {
+                                    clase: 'text-green-600',
+                                    icono: '<i class="fas fa-check-circle"></i> PAGADO',
+                                    subtexto: 'Validado por Tesorería' // Mensaje profesional pero diferente si se observa de cerca
+                                };
+                            }
                             return {
                                 clase: 'text-green-600',
                                 icono: '<i class="fas fa-check-circle"></i> PAGADO',
@@ -354,7 +380,7 @@
                             return {
                                 clase: 'text-amber-500',
                                 icono: '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO',
-                                subtexto: 'No reportado a la representante'
+                                subtexto: 'Directo con Presidencia' // Ajustado para reflejar lo del Depto 8
                             };
                         } else {
                             return {
@@ -366,14 +392,15 @@
                     };
 
                     datos.forEach(col => {
-                        if (!col[0]) return; 
+                        const numDepto = col[0]?.trim();
+                        if (!numDepto) return; 
                     
                         const cuotaAguaMonto = 170; 
                         const cuotaRioMonto = parseFloat(col[4]) || 0;
                         
-                        // Lógica de estatus corregida
-                        const infoAgua = obtenerInfoEstatus(col[2], col[3]);
-                        const infoRio = obtenerInfoEstatus(col[5], col[6]);
+                        // Pasamos el número de departamento a la función controladora de estatus
+                        const infoAgua = obtenerInfoEstatus(col[2], col[3], numDepto);
+                        const infoRio = obtenerInfoEstatus(col[5], col[6], numDepto);
 
                         const rawS1 = col[10];
                         const rawS2 = col[11];
@@ -389,13 +416,10 @@
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
                     
-                        // CÁLCULO TOTAL (Incluye pagos externos en la suma de la torre)
-                        // Solo sumamos si el pago fue validado localmente ('pagado')
                         let totalVecinoOperativo = 0;
                         if (col[2]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaAguaMonto;
                         if (col[5]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaRioMonto;
                         
-                        // Las multas y planes B se mantienen igual si están liquidados
                         if (multaPagada) totalVecinoOperativo += multaMonto;
                         totalVecinoOperativo += (s1 + s2 + s3);
                     
@@ -405,27 +429,28 @@
                         const tarjeta = document.createElement('div');
                         tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
                         
+                        // --- RENOMBRADO DINÁMICO DE SEMANAS CON BASE AL COMITÉ ---
                         let desglosePlanB = "";
                         if (rawS1 !== "" && rawS1 !== null && typeof rawS1 !== 'undefined') {
-                            desglosePlanB += `<div class="flex justify-between"><span>Semana 1 (Pipa)</span><span class="font-black text-blue-700">$${s1}</span></div>`;
+                            desglosePlanB += `<div class="flex justify-between items-center"><span>Semana 1 <span class="text-[11px] text-slate-400 font-normal">(Sem. ${sem1Comite} Comité)</span></span><span class="font-black text-blue-700">$${s1}</span></div>`;
                         }
                         if (rawS2 !== "" && rawS2 !== null && typeof rawS2 !== 'undefined') {
-                            desglosePlanB += `<div class="flex justify-between"><span>Semana 2 (Pipa)</span><span class="font-black text-blue-700">$${s2}</span></div>`;
+                            desglosePlanB += `<div class="flex justify-between items-center"><span>Semana 2 <span class="text-[11px] text-slate-400 font-normal">(Sem. ${sem2Comite} Comité)</span></span><span class="font-black text-blue-700">$${s2}</span></div>`;
                         }
                         if (rawS3 !== "" && rawS3 !== null && typeof rawS3 !== 'undefined') {
-                            desglosePlanB += `<div class="flex justify-between"><span>Semana 3 (Pipa)</span><span class="font-black text-blue-700">$${s3}</span></div>`;
+                            desglosePlanB += `<div class="flex justify-between items-center"><span>Semana 3 <span class="text-[11px] text-slate-400 font-normal">(Sem. ${sem3Comite} Comité)</span></span><span class="font-black text-blue-700">$${s3}</span></div>`;
                         }
                     
                         let htmlPlanB = (desglosePlanB !== "") ? `
                             <div class="px-6 pb-4">
                                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-blue-900">
                                     <p class="text-[10px] font-black uppercase mb-2 flex items-center gap-2 opacity-60 tracking-widest">
-                                        <i class="fas fa-faucet text-blue-500"></i> Plan B (Pipas)
+                                        <i class="fas fa-faucet text-blue-500"></i> Plan B (Pipas del Ciclo)
                                     </p>
                                     <div class="text-sm space-y-2 font-bold">${desglosePlanB}</div>
                                 </div>
                             </div>` : '';
-    
+
                         let htmlMulta = multaMonto > 0 ? `
                             <div class="px-6 pb-4">
                                 <div class="${multaPagada ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border-2 rounded-2xl p-4 flex justify-between items-center">
@@ -439,7 +464,7 @@
                                     <div class="${multaPagada ? 'text-green-600' : 'text-orange-600'} font-black text-2xl">+$${multaMonto}</div>
                                 </div>
                             </div>` : '';
-    
+
                         let htmlPozo = `
                             <div class="px-6 pb-4">
                                 <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
@@ -463,7 +488,13 @@
                                     </div>
                                 </div>
                             </div>`;
-    
+
+                        // Configuración de pie de tarjeta discreto para el Depto 6
+                        let textoExtraPie = "";
+                        if (numDepto === "6") {
+                            textoExtraPie = `<span class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-tight">Regimen Tesorería</span>`;
+                        }
+
                         tarjeta.innerHTML = `
                             <div class="p-6 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                                 <div>
@@ -494,13 +525,15 @@
                             ${htmlPozo}
                             ${htmlPlanB}
                             ${htmlMulta}
-                            <div class="px-6 py-3 bg-slate-50/80 text-xs text-slate-500 flex justify-between font-medium">
+                            <div class="px-6 py-3 bg-slate-50/80 text-xs text-slate-500 flex justify-between items-center font-medium">
                                 <span><i class="fas fa-user-circle mr-1"></i> Residente: ${col[1] || '---'}</span>
+                                ${textoExtraPie}
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
                     });
-    
+
+                    // --- RENDERIZADO METRICAS GLOBALES (Se mantiene igual) ---
                     const META_GLOBAL_POZO = 48000; 
                     const porcentajeGlobal = Math.min((sumaPozoTotal / META_GLOBAL_POZO) * 100, 100);
                     
