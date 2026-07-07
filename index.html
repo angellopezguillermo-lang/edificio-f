@@ -415,12 +415,22 @@
                         const metaPozo = 6000;
                         const pozoAbonado = parseFloat(col[16]) || 0;
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
-                    
+
+                        // --- CORRESPONDIENTE A LAS NUEVAS COLUMNAS EN EL EXCEL ---
+                        const cuotaAnualMonto = 250;
+                        const estatusAnual = col[18]?.trim().toLowerCase();
+                        const fechaAnual = col[19] || '-';
+                        const anualPagada = estatusAnual === 'pagado';
+                        // ---------------------------------------------------------
+
                         let totalVecinoOperativo = 0;
                         if (col[2]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaAguaMonto;
                         if (col[5]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaRioMonto;
-                        
                         if (multaPagada) totalVecinoOperativo += multaMonto;
+
+                        // Sumamos los $250 al total del vecino SOLO si realmente ya lo liquidó
+                        if (anualPagada) totalVecinoOperativo += cuotaAnualMonto; 
+
                         totalVecinoOperativo += (s1 + s2 + s3);
                     
                         sumaGeneralEdificio += totalVecinoOperativo;
@@ -488,6 +498,43 @@
                                     </div>
                                 </div>
                             </div>`;
+
+                        // --- BLOQUE VISUAL DE LA CUOTA EXTRAORDINARIA ---
+                        const esMesJulio = datos[0][7]?.trim().toLowerCase().includes('julio');
+                        let htmlCuotaAnual = '';
+
+                        if (esMesJulio) {
+                            let claseAnual = 'text-red-500';
+                            let iconoAnual = '<i class="fas fa-clock"></i> PENDIENTE';
+                            let subtextoAnual = 'Esperando pago';
+                            let fondoTarjeta = 'bg-amber-50 border-amber-200';
+
+                            if (estatusAnual === 'pagado') {
+                                claseAnual = 'text-fuchsia-600';
+                                iconoAnual = '<i class="fas fa-check-circle"></i> PAGADO';
+                                subtextoAnual = `Fecha: ${fechaAnual}`;
+                                fondoTarjeta = 'bg-fuchsia-50 border-fuchsia-200';
+                            } else if (estatusAnual === 'externo') {
+                                claseAnual = 'text-amber-500';
+                                iconoAnual = '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO';
+                                subtextoAnual = 'Directo con Presidencia';
+                                fondoTarjeta = 'bg-amber-50/60 border-amber-200/60';
+                            }
+
+                            htmlCuotaAnual = `
+                                <div class="px-6 pb-4">
+                                    <div class="${fondoTarjeta} border-2 rounded-2xl p-4 flex justify-between items-center">
+                                        <div>
+                                            <p class="text-[10px] font-black uppercase ${claseAnual} tracking-widest">Cobro Único Anual</p>
+                                            <p class="text-sm font-bold text-slate-700 leading-tight mb-1">Cuota Extraordinaria</p>
+                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black ${estatusAnual === 'pagado' ? 'bg-fuchsia-200 text-fuchsia-700' : 'bg-amber-200 text-amber-700'} uppercase">
+                                                ${estatusAnual === 'pagado' ? 'Liquidado' : estatusAnual === 'externo' ? 'Especial' : 'Pendiente'}
+                                            </span>
+                                        </div>
+                                        <div class="${claseAnual} font-black text-2xl">+$250</div>
+                                    </div>
+                                </div>`;
+                        }
 
                         // Configuración de pie de tarjeta discreto para el Depto 6
                         let textoExtraPie = "";
