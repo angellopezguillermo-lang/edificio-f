@@ -394,130 +394,108 @@
                     datos.forEach(col => {
                         const numDepto = col[0]?.trim();
                         if (!numDepto) return; 
-                    
-                        const cuotaAguaMonto = 170; 
-                        const cuotaRioMonto = parseFloat(col[4]) || 0;
-                        
-                        // Pasamos el número de departamento a la función controladora de estatus
-                        const infoAgua = obtenerInfoEstatus(col[2], col[3], numDepto);
-                        const infoRio = obtenerInfoEstatus(col[5], col[6], numDepto);
 
-                        const rawS1 = col[10];
-                        const rawS2 = col[11];
-                        const rawS3 = col[12];
-                        const s1 = parseFloat(rawS1) || 0;
-                        const s2 = parseFloat(rawS2) || 0;
-                        const s3 = parseFloat(rawS3) || 0;
-                        const multaMonto = parseFloat(col[13]) || 0;
-                        const multaMotivo = col[14] || "Sanción"; 
-                        const multaPagada = col[15]?.trim().toLowerCase() === 'pagado';
-                    
+                        const vecino = col[1] || 'No disponible';
+                        const cuotaAguaMonto = 170; 
+                        const cuotaRioMonto = parseFloat(col[4]) || 0; 
+                        const estatusAgua = col[2]?.trim().toLowerCase();
+                        const estatusRio = col[5]?.trim().toLowerCase();
+                        const fechaAgua = col[3] || '-';
+                        const fechaRio = col[6] || '-';
+
+                        // --- CORRECCIÓN DE ÍNDICES PARA EL POZO PROFUNDO ---
                         const metaPozo = 6000;
-                        const pozoAbonado = parseFloat(col[16]) || 0;
+                        const pozoAbonado = parseFloat(col[16]) || 0; // col[16] es la columna real en tu CSV
                         const porcentajePozo = Math.min((pozoAbonado / metaPozo) * 100, 100);
 
-                        // --- CORRESPONDIENTE A LAS NUEVAS COLUMNAS EN EL EXCEL ---
+                        // --- NUEVAS COLUMNAS PARA LA ANUALIDAD (JULIO) ---
                         const cuotaAnualMonto = 250;
-                        const estatusAnual = col[17]?.trim().toLowerCase();
-                        const fechaAnual = col[18] || '-';
+                        const estatusAnual = col[17]?.trim().toLowerCase(); // Columna R
+                        const fechaAnual = col[18] || '-';                 // Columna S
                         const anualPagada = estatusAnual === 'pagado';
-                        // ---------------------------------------------------------
 
+                        // Determinar mes de forma segura leyendo la fila actual del vecino (col[7])
+                        const esMesJulio = col[7]?.trim().toLowerCase().includes('julio');
+
+                        // Procesamiento de Multas (Mantenemos tus índices 13, 14 y 15)
+                        const multaMonto = parseFloat(col[13]) || 0;
+                        const multaNota = col[14] || '';
+                        const estatusMulta = col[15]?.trim().toLowerCase();
+                        const multaPagada = estatusMulta === 'pagado';
+
+                        // Totales de consumo semanal (S1, S2, S3)
+                        const s1 = parseFloat(col[10]) || 0;
+                        const s2 = parseFloat(col[11]) || 0;
+                        const s3 = parseFloat(col[12]) || 0;
+
+                        // --- CÁLCULO DEL TOTAL VECINO OPERATIVO ---
                         let totalVecinoOperativo = 0;
-                        if (col[2]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaAguaMonto;
-                        if (col[5]?.trim().toLowerCase() === 'pagado') totalVecinoOperativo += cuotaRioMonto;
+                        if (estatusAgua === 'pagado') totalVecinoOperativo += cuotaAguaMonto;
+                        if (estatusRio === 'pagado') totalVecinoOperativo += cuotaRioMonto;
                         if (multaPagada) totalVecinoOperativo += multaMonto;
-
-                        // Sumamos los $250 al total del vecino SOLO si realmente ya lo liquidó
-                        if (anualPagada) totalVecinoOperativo += cuotaAnualMonto; 
+                        if (anualPagada) totalVecinoOperativo += cuotaAnualMonto; // Sumamos la anualidad si ya está pagada
 
                         totalVecinoOperativo += (s1 + s2 + s3);
-                    
-                        sumaGeneralEdificio += totalVecinoOperativo;
-                        sumaPozoTotal += pozoAbonado;
-                    
-                        const tarjeta = document.createElement('div');
-                        tarjeta.className = "bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden";
-                        
-                        // --- RENOMBRADO DINÁMICO DE SEMANAS CON BASE AL COMITÉ ---
-                        let desglosePlanB = "";
-                        if (rawS1 !== "" && rawS1 !== null && typeof rawS1 !== 'undefined') {
-                            desglosePlanB += `<div class="flex justify-between items-center"><span>Semana 1 <span class="text-[11px] text-slate-400 font-normal">(Sem. ${sem1Comite} Comité)</span></span><span class="font-black text-blue-700">$${s1}</span></div>`;
-                        }
-                        if (rawS2 !== "" && rawS2 !== null && typeof rawS2 !== 'undefined') {
-                            desglosePlanB += `<div class="flex justify-between items-center"><span>Semana 2 <span class="text-[11px] text-slate-400 font-normal">(Sem. ${sem2Comite} Comité)</span></span><span class="font-black text-blue-700">$${s2}</span></div>`;
-                        }
-                        if (rawS3 !== "" && rawS3 !== null && typeof rawS3 !== 'undefined') {
-                            desglosePlanB += `<div class="flex justify-between items-center"><span>Semana 3 <span class="text-[11px] text-slate-400 font-normal">(Sem. ${sem3Comite} Comité)</span></span><span class="font-black text-blue-700">$${s3}</span></div>`;
-                        }
-                    
-                        let htmlPlanB = (desglosePlanB !== "") ? `
-                            <div class="px-6 pb-4">
-                                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-blue-900">
-                                    <p class="text-[10px] font-black uppercase mb-2 flex items-center gap-2 opacity-60 tracking-widest">
-                                        <i class="fas fa-faucet text-blue-500"></i> Plan B (Pipas del Ciclo)
-                                    </p>
-                                    <div class="text-sm space-y-2 font-bold">${desglosePlanB}</div>
-                                </div>
-                            </div>` : '';
 
-                        let htmlMulta = multaMonto > 0 ? `
-                            <div class="px-6 pb-4">
-                                <div class="${multaPagada ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border-2 rounded-2xl p-4 flex justify-between items-center">
-                                    <div>
-                                        <p class="text-[10px] font-black uppercase ${multaPagada ? 'text-green-600' : 'text-orange-600'} tracking-widest">Cargo Adicional</p>
-                                        <p class="text-sm font-bold text-slate-700 leading-tight mb-1">${multaMotivo}</p>
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black ${multaPagada ? 'bg-green-200 text-green-700' : 'bg-orange-200 text-orange-700'} uppercase">
-                                            ${multaPagada ? 'Liquidado' : 'Pendiente'}
-                                        </span>
-                                    </div>
-                                    <div class="${multaPagada ? 'text-green-600' : 'text-orange-600'} font-black text-2xl">+$${multaMonto}</div>
-                                </div>
-                            </div>` : '';
+                        // Configuración visual del Pozo Profundo
+                        let clasePozo = 'text-blue-600 bg-blue-50';
+                        let barraPozo = 'bg-blue-600';
+                        if (porcentajePozo >= 100) {
+                            clasePozo = 'text-emerald-600 bg-emerald-50';
+                            barraPozo = 'bg-emerald-600';
+                        }
 
                         let htmlPozo = `
                             <div class="px-6 pb-4">
-                                <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
-                                    <div class="flex justify-between items-end mb-2">
+                                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                                    <div class="flex justify-between items-center mb-2">
                                         <div>
-                                            <p class="text-[10px] font-black uppercase text-indigo-600 tracking-widest">Cooperación Pozo Profundo</p>
-                                            <p class="text-xs font-bold text-slate-500 italic">Meta: $${metaPozo}</p>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto Comunitario</p>
+                                            <p class="text-sm font-bold text-slate-700 leading-tight">Cooperación Pozo Profundo</p>
                                         </div>
-                                        <div class="text-right">
-                                            <span class="text-xl font-black text-indigo-800">$${pozoAbonado}</span>
-                                        </div>
-                                    </div>
-                                    <div class="w-full bg-indigo-200/50 rounded-full h-2.5 overflow-hidden">
-                                        <div class="bg-indigo-600 h-full transition-all duration-1000" style="width: ${porcentajePozo}%"></div>
-                                    </div>
-                                    <div class="flex justify-between mt-2">
-                                        <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-tighter">
-                                            ${porcentajePozo >= 100 ? '¡META ALCANZADA! 🎉' : `Faltan: $${metaPozo - pozoAbonado}`}
+                                        <span class="text-xs font-black px-2.5 py-1 rounded-full ${clasePozo}">
+                                            $${pozoAbonado.toLocaleString('es-MX')} / $${metaPozo.toLocaleString('es-MX')}
                                         </span>
-                                        <span class="text-[9px] text-indigo-400 font-black">${Math.round(porcentajePozo)}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                                        <div class="${barraPozo} h-full transition-all duration-500" style="width: ${porcentajePozo}%"></div>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 font-medium mt-1.5 text-right">Progreso del departamento: ${porcentajePozo.toFixed(1)}%</p>
+                                </div>
+                            </div>`;
+
+                        let htmlPlanB = `
+                            <div class="px-6 pb-4">
+                                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Abasto Alterno (Pipas)</p>
+                                    <div class="grid grid-cols-3 gap-2 text-center">
+                                        <div class="bg-white p-2 rounded-xl border border-slate-100">
+                                            <p class="text-[9px] font-bold text-slate-400 uppercase">Semana 1</p>
+                                            <p class="text-sm font-black text-slate-700">$${s1}</p>
+                                        </div>
+                                        <div class="bg-white p-2 rounded-xl border border-slate-100">
+                                            <p class="text-[9px] font-bold text-slate-400 uppercase">Semana 2</p>
+                                            <p class="text-sm font-black text-slate-700">$${s2}</p>
+                                        </div>
+                                        <div class="bg-white p-2 rounded-xl border border-slate-100">
+                                            <p class="text-[9px] font-bold text-slate-400 uppercase">Semana 3</p>
+                                            <p class="text-sm font-black text-slate-700">$${s3}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>`;
 
-                        // --- BLOQUE VISUAL DE LA CUOTA EXTRAORDINARIA ---
-                        const esMesJulio = datos[0][7]?.trim().toLowerCase().includes('julio');
+                        // --- GENERACIÓN DEL BLOQUE VISUAL DE LA CUOTA ANUAL ---
                         let htmlCuotaAnual = '';
-
                         if (esMesJulio) {
                             let claseAnual = 'text-red-500';
-                            let iconoAnual = '<i class="fas fa-clock"></i> PENDIENTE';
-                            let subtextoAnual = 'Esperando pago';
                             let fondoTarjeta = 'bg-amber-50 border-amber-200';
 
                             if (estatusAnual === 'pagado') {
                                 claseAnual = 'text-fuchsia-600';
-                                iconoAnual = '<i class="fas fa-check-circle"></i> PAGADO';
-                                subtextoAnual = `Fecha: ${fechaAnual}`;
                                 fondoTarjeta = 'bg-fuchsia-50 border-fuchsia-200';
                             } else if (estatusAnual === 'externo') {
                                 claseAnual = 'text-amber-500';
-                                iconoAnual = '<i class="fas fa-exclamation-triangle"></i> PAGO EXTERNO';
-                                subtextoAnual = 'Directo con Presidencia';
                                 fondoTarjeta = 'bg-amber-50/60 border-amber-200/60';
                             }
 
@@ -528,7 +506,7 @@
                                             <p class="text-[10px] font-black uppercase ${claseAnual} tracking-widest">Cobro Único Anual</p>
                                             <p class="text-sm font-bold text-slate-700 leading-tight mb-1">Cuota Extraordinaria</p>
                                             <span class="px-2 py-0.5 rounded-full text-[9px] font-black ${estatusAnual === 'pagado' ? 'bg-fuchsia-200 text-fuchsia-700' : 'bg-amber-200 text-amber-700'} uppercase">
-                                                ${estatusAnual === 'pagado' ? 'Liquidado' : estatusAnual === 'externo' ? 'Especial' : 'Pendiente'}
+                                                ${estatusAnual === 'pagado' ? 'Liquidado' : estatusAnual === 'externo' ? 'Especial' : `Pendiente • ${fechaAnual}`}
                                             </span>
                                         </div>
                                         <div class="${claseAnual} font-black text-2xl">+$250</div>
@@ -536,45 +514,77 @@
                                 </div>`;
                         }
 
-                        // Configuración de pie de tarjeta discreto para el Depto 6
-                        let textoExtraPie = "";
-                        if (numDepto === "6") {
-                            textoExtraPie = `<span class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-tight">Regimen Tesorería</span>`;
+                        // Configuración visual de Multas
+                        let htmlMulta = "";
+                        if (multaMonto > 0) {
+                            let claseMulta = 'text-red-500';
+                            let fondoMulta = 'bg-red-50 border-red-100';
+
+                            if (multaPagada) {
+                                claseMulta = 'text-emerald-600';
+                                fondoMulta = 'bg-emerald-50 border-emerald-100';
+                            }
+
+                            htmlMulta = `
+                                <div class="px-6 pb-4">
+                                    <div class="${fondoMulta} border rounded-2xl p-4">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div>
+                                                <p class="text-[10px] font-black uppercase ${claseMulta} tracking-widest">Sanción / Cargo Extra</p>
+                                                <p class="text-sm font-bold text-slate-700 leading-tight">${multaNota || 'Multa Aplicada'}</p>
+                                            </div>
+                                            <div class="${claseMulta} font-black text-xl">$${multaMonto}</div>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black ${multaPagada ? 'bg-emerald-200 text-emerald-700' : 'bg-red-200 text-red-700'} uppercase">
+                                            ${multaPagada ? 'Pagada' : 'Pendiente de Pago'}
+                                        </span>
+                                    </div>
+                                </div>`;
                         }
+
+                        // Generación de la Tarjeta en el DOM
+                        const tarjeta = document.createElement('div');
+                        tarjeta.className = 'bg-white rounded-3xl shadow-xl shadow-slate-100/50 border border-slate-100 overflow-hidden flex flex-col justify-between transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-1';
 
                         tarjeta.innerHTML = `
                             <div class="p-6 flex justify-between items-center border-b border-slate-50 bg-slate-50/50">
                                 <div>
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Departamento</span>
-                                    <div class="text-3xl font-black text-indigo-950 leading-none">${col[0]}</div>
+                                    <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-black uppercase tracking-wider">Depto ${numDepto}</span>
+                                    <h3 class="text-base font-bold text-slate-800 mt-2 tracking-tight">${vecino}</h3>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Abonado Total</span>
-                                    <div class="text-3xl font-black text-indigo-600 leading-none">$${totalVecinoOperativo}</div>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Abonado Total</p>
+                                    <p class="text-2xl font-black text-indigo-600 tracking-tight">$${totalVecinoOperativo.toLocaleString('es-MX')}</p>
                                 </div>
                             </div>
+
                             <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-50 mb-4 text-center">
-                                <div class="p-5">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Agua ($${cuotaAguaMonto})</div>
-                                    <div class="${infoAgua.clase} font-black text-base mb-1">
-                                        ${infoAgua.icono}
-                                    </div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${infoAgua.subtexto}</div>
+                                <div class="p-4">
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cuota Agua</p>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${estatusAgua === 'pagado' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${estatusAgua === 'pagado' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                                        ${estatusAgua === 'pagado' ? 'Pagado' : 'Pendiente'}
+                                    </span>
+                                    <p class="text-[10px] text-slate-400 mt-1 font-medium">${fechaAgua}</p>
                                 </div>
-                                <div class="p-5">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Río ($${cuotaRioMonto})</div>
-                                    <div class="${infoRio.clase} font-black text-base mb-1">
-                                        ${infoRio.icono}
-                                    </div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${infoRio.subtexto}</div>
+                                <div class="p-4">
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cuota Río</p>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${estatusRio === 'pagado' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${estatusRio === 'pagado' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                                        ${estatusRio === 'pagado' ? 'Pagado' : 'Pendiente'}
+                                    </span>
+                                    <p class="text-[10px] text-slate-400 mt-1 font-medium">${fechaRio}</p>
                                 </div>
                             </div>
+
                             ${htmlPozo}
                             ${htmlPlanB}
+                            ${htmlCuotaAnual}
                             ${htmlMulta}
+
                             <div class="px-6 py-3 bg-slate-50/80 text-xs text-slate-500 flex justify-between items-center font-medium">
-                                <span><i class="fas fa-user-circle mr-1"></i> Residente: ${col[1] || '---'}</span>
-                                ${textoExtraPie}
+                                <span>Edificio F - Transparencia</span>
+                                <i class="fas fa-chevron-right text-slate-300 text-[10px]"></i>
                             </div>
                         `;
                         contenedor.appendChild(tarjeta);
